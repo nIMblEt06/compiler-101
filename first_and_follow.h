@@ -14,7 +14,7 @@
 #define max_terminal 50
 #define NT_SIZE 50
 #define FIRST_AND_FOLLOW_LENGTH 35
-// DECIDED ON THE BASIS OF THE NUMBER OF NON_TERMINALS
+// DECIDED ON THE BASIS OF THE NUMBER OF NON_TERMINALS - VERIFY ONCE
 
 extern RULE Grammar[GRAMMAR_MAX_SIZE];
 typedef struct set{
@@ -39,6 +39,6 @@ FIRST_AND_FOLLOW_ENTRY *first_and_follow_table[FIRST_AND_FOLLOW_LENGTH];
 set *first_set(sym x);
 
 //follow set uses first_set
-void follow_set(sym x);
+set *follow_set(sym x);
 
 #endif

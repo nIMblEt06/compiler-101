@@ -14,26 +14,53 @@ int hashFunction(Non_terminal nt){
 	return (int)nt % HASH_TABLE_SIZE;
 }
 
-void addRuleToHashTable(int rule_index){
+void addRuleToHashTableLHS(int rule_index){
 	Non_terminal lhs = Grammar[rule_index].lhs.nT;
 	int hashInd = hashFunction(lhs);
-	if(HashTable[hashInd].count == 0){
-		HashTable[hashInd].lhs = lhs; // if hashIndex is empty
+	if(HashTableLHS[hashInd].count == 0){
+		HashTableLHS[hashInd].tkn = lhs; // if hashIndex is empty
 	}
-	HashTable[hashInd].count += 1;
-    HashTable[hashInd].rule_indices[HashTable[hashInd].count++] = rule_index;
+	HashTableLHS[hashInd].count += 1;
+    HashTableLHS[hashInd].rule_indices[HashTableLHS[hashInd].count++] = rule_index;
+}
+
+void addRulesToHashTableRHS(int rule_index){
+    sym *rhs_list = Grammar[rule_index].rhs;
+    
+    for (int i = 0;i < RULE_SIZE; i++){
+        if (rhs_list[i].isTerminal == true || (rhs_list[i].nT == '$' /*some End Of String char delimiter*/)){
+            break;
+        } else {
+            // if (rhs_list[i].isTerminal == false)
+            Non_terminal rhs = rhs_list[i].nT;
+            int hashInd = hashFunction(rhs);
+            if(HashTableRHS[hashInd].count == 0){
+                HashTableRHS[hashInd].tkn = rhs; // if hashInd is empty
+            }
+
+            HashTableRHS[hashInd].count += 1;
+            HashTableRHS[hashInd].rule_indices[HashTableRHS[hashInd].count++] = rule_index;
+        }
+    }
 }
 
 void initializeHashTable() {
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        HashTable[i].count = 0;
+        HashTableLHS[i].count = 0;
+        HashTableRHS[i].count = 0;
     }
 }
 
 // returns the set of Rules for a given Non_terminal lhs of the grammar rule.
 HashTableEntry getRulesByLHS(Non_terminal lhs){
     int ind = hashFunction(lhs);
-    HashTableEntry rules_entry = HashTable[ind];
+    HashTableEntry rules_entry = HashTableLHS[ind];
+    return rules_entry;
+}
+
+HashTableEntry getRulesByRHS(Non_terminal rhs){
+    int ind = hashFunction(rhs);
+    HashTableEntry rules_entry = HashTableRHS[ind];
     return rules_entry;
 }
 
@@ -52,39 +79,44 @@ set *first_set(sym x){
     } else {
         HashTableEntry rules_entry = getRulesByLHS(x.nT);
         int count = rules_entry.count;
-        for(int i = 0; i < count; i++){ // iterating through all the rules containing x in LHS
+        for(int i = 0; i < count; i++){ 
+            // iterating through all the rules containing x in LHS
             int rule_ind = rules_entry.rule_indices[i];
             RULE rule = Grammar[rule_ind];
-            if (rule.rhs[0].isTerminal == true){ // if first of RHS is a terminal
+            
+            if (rule.rhs[0].isTerminal == true){ 
+                // if first of RHS is a terminal
                 list_first->t[list_first->size] = rule.rhs[0].t;
                 list_first->size += 1;
-            } else if (rule.rhs[0].isTerminal == false){ // if first of RHS is a non-terminal
+            } else if (rule.rhs[0].isTerminal == false){ 
+                // if first of RHS is a non-terminal
                 int j = 0;
                 while(j < max_terminal){
-                    set *rhs_first = first_set(rule.rhs[j]);
-                    if(rule.rhs[j].isTerminal == false){
-
+                    if(rule.rhs[j].isTerminal == true){
+                        list_first->t[list_first->size] = rule.rhs[j].t;
                     } else {
+                        set *rhs_first = first_set(rule.rhs[j]);
+                        
                         // add element to the list.
-                    }
-                    // add elements of rhs_first to list_first;
-                    //
-                    //
-                    if (rhs_first->containsEpsilon == false){
-                        break;
-                    } else {
-                        j++; // so that we can find the FIRST(next_non_terminal)
+                        for (int k = 0; k < rhs_first->size; k++){
+                            list_first->t[list_first->size] = rhs_first->t[k];
+                            list_first->size += 1;
+                        }
+                        if (rhs_first->containsEpsilon == false){
+                            break;
+                        } else {
+                            j++; // so that we can find the FIRST(next_non_terminal)
+                        }
                     }
                 }
             }
         }
     }
-
     return list_first;
 }
 
 set *follow_set(sym x){
-
+    
 }
 
 

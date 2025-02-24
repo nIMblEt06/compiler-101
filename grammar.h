@@ -52,14 +52,15 @@ typedef struct Rule{
 // Array of all production rules
 RULE Grammar[GRAMMAR_MAX_SIZE];
 
-// Hash Table Structure
+// Hash Table Structure for mapping a Non_terminal to its corresponding rule.
 typedef struct HashTableEntry{
-	Non_terminal lhs;
+	Non_terminal tkn;
 	int rule_indices[GRAMMAR_MAX_SIZE];
 	int count;
 } HashTableEntry;
 
-HashTableEntry HashTable[HASH_TABLE_SIZE];
+HashTableEntry HashTableLHS[HASH_TABLE_SIZE];
+HashTableEntry HashTableRHS[HASH_TABLE_SIZE*2];
 
 int hashFunction(Non_terminal nt);
 
