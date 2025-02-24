@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "__availability": "c",
+        "deque": "c",
+        "ostream": "c",
+        "print": "c",
+        "streambuf": "c",
+        "string": "c"
+    }
+}

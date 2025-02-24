@@ -1,10 +1,10 @@
-#ifndef parser_def
-#define parser_def
+#ifndef PARSER_DEF_H
+#define PARSER_DEF_H
 
 #include "lexerDef.h"
 
-#define set_size 20
-#define nT_count 53
-
+#define SET_SIZE 20
+#define NON_TERMINALS_COUNT 53
+#define TERMINALS_COUNT 100 // just assumed for now
 
 #endif

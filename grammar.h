@@ -3,10 +3,14 @@
  * Import this as module in parser.c/parser.h
  * 
 *******************************************************************************/
+#ifndef GRAMMAR_H
+#define GRAMMAR_H
 #include "symbolTable.h"
+#include <stdbool.h>
 
-#define rule_size 25
-#define MAX_SIZE 100
+#define RULE_SIZE 25
+#define GRAMMAR_MAX_SIZE 101
+#define HASH_TABLE_SIZE 101
 
 typedef enum {program,mainFunction,otherFunctions,function,input_par,output_par,parameter_list,dataType,primitiveDatatype,
 	constructedDatatype,remaining_list,stmts,typeDefinitions,typeDefinition,fieldDefinitions,fieldDefinition,moreFields,
@@ -27,6 +31,8 @@ typedef enum {
 		TK_NOT,      TK_LT,        TK_LE,      TK_EQ,       TK_GT,
 		TK_GE,       TK_NE} Terminal;
 
+
+
 /*Stores the symbols for production rule with bool to differentiate b/w terminal and non_terminal
 	can use Terminal and Non_terminal arrays to get the token using the enum*/
 		
@@ -39,8 +45,31 @@ typedef struct symbol{
 //Structure for a single production rule
 typedef struct Rule{
 	sym lhs;
-	sym rhs[rule_size];
+	sym rhs[RULE_SIZE];
+	int rule_number;
 }RULE;
 
 // Array of all production rules
-RULE Grammer[MAX_SIZE];
+RULE Grammar[GRAMMAR_MAX_SIZE];
+
+// Hash Table Structure
+typedef struct HashTableEntry{
+	Non_terminal lhs;
+	int rule_indices[GRAMMAR_MAX_SIZE];
+	int count;
+} HashTableEntry;
+
+HashTableEntry HashTable[HASH_TABLE_SIZE];
+
+int hashFunction(Non_terminal nt);
+
+// function to enter rule into grammar hash table
+void addRuleToHashTable(int rule_index);
+
+// Function to initialize the hash table
+void initializeHashTable();
+
+// returns the set of Rules for a given Non_terminal lhs of the grammar rule.
+HashTableEntry getRulesByLHS(Non_terminal lhs);
+
+#endif
