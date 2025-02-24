@@ -60,8 +60,13 @@ set *first_set(sym x){
                 list_first->size += 1;
             } else if (rule.rhs[0].isTerminal == false){ // if first of RHS is a non-terminal
                 int j = 0;
-                while(j < max_terminal && rule.rhs[j].isTerminal == false){
+                while(j < max_terminal){
                     set *rhs_first = first_set(rule.rhs[j]);
+                    if(rule.rhs[j].isTerminal == false){
+
+                    } else {
+                        // add element to the list.
+                    }
                     // add elements of rhs_first to list_first;
                     //
                     //
@@ -79,7 +84,7 @@ set *first_set(sym x){
 }
 
 set *follow_set(sym x){
-    
+
 }
 
 
