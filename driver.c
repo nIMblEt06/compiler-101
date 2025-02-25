@@ -44,14 +44,46 @@ int main(int argc,char *argv[]){
 
 	}
 
+	// PARSER PART
+
 	// Initialized the Hash tables for LHS and RHS of Grammar Rules.
 	initializeHashTable();
 
 	fill_grammar();
+	// make sure to add <program> rule to the Grammar RULE table first. 
 
-	first_and_follow_table[0] = (FIRST_AND_FOLLOW_ENTRY *)malloc(sizeof(FIRST_AND_FOLLOW_ENTRY));
-	set follow_set = first_and_follow_table[0]->follow_set;
-	follow_set.t[follow_set.size] = DOLLAR;
+	FIRST_AND_FOLLOW_ENTRY *first_and_follow_table = (FIRST_AND_FOLLOW_ENTRY *)malloc(sizeof(FIRST_AND_FOLLOW_ENTRY) * NT_SIZE);
+
+	// okay so instead of initially declaring the DOLLAR as the FOLLOW_SET of "program" token, i will use an additional IF condition every in the follow funciton. 
+	// Loop to find first_set() for all the Non_terminals.
+	for(int i = 0;i < GRAMMAR_MAX_SIZE; i++){
+		sym lhs_token = Grammar[i].lhs;
+		set *first_set_token = first_set(lhs_token);
+		FIRST_AND_FOLLOW_ENTRY *entry = get_first_and_follow_entry(lhs_token);
+		entry->first_set = first_set_token;
+	}
+
+	// Explicitly adding the token for "program" start_token.
+	int program_ind = hashFunction(program);
+	FIRST_AND_FOLLOW_ENTRY *fnf_entry = first_and_follow_table + program_ind;
+	fnf_entry->follow_set = (set *) malloc(sizeof(set)*max_terminal);
+	fnf_entry->follow_set->t[fnf_entry->follow_set->size] = $;
+	fnf_entry->follow_set->size += 1;
+
+	for(int i = 0; i < GRAMMAR_MAX_SIZE; i++){
+		sym *rhs_rule = Grammar[i].rhs;
+		for (int i = 0; i < RULE_SIZE; i++){
+			set *token_follow_set = follow_set(rhs_rule[i]);
+		}
+	}
+
+	
+	// Finding the Follow set for the all the elements next. 
+	
+
+
+	// set follow_set = first_and_follow_table[0].follow_set;
+	// follow_set.t[follow_set.size] = DOLLAR;
 
 
 }

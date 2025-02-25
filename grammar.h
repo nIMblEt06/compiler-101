@@ -10,7 +10,7 @@
 
 #define RULE_SIZE 25
 #define GRAMMAR_MAX_SIZE 101
-#define HASH_TABLE_SIZE 101
+#define HASH_TABLE_SIZE 53
 
 typedef enum {program,mainFunction,otherFunctions,function,input_par,output_par,parameter_list,dataType,primitiveDatatype,
 	constructedDatatype,remaining_list,stmts,typeDefinitions,typeDefinition,fieldDefinitions,fieldDefinition,moreFields,
@@ -29,7 +29,7 @@ typedef enum {
 		TK_PLUS,     TK_MINUS,     TK_MUL,     TK_DIV,      TK_CALL,
 		TK_RECORD,   TK_ENDRECORD, TK_ELSE,    TK_AND,      TK_OR,
 		TK_NOT,      TK_LT,        TK_LE,      TK_EQ,       TK_GT,
-		TK_GE,       TK_NE,		   DOLLAR} Terminal;
+		TK_GE,       TK_NE,		   $} Terminal;
 // NOTE: Added token DOLLAR;
 
 

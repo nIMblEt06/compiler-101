@@ -23,17 +23,17 @@ typedef struct set{
 	int size;
 } set;
 
-set first_set[NT_SIZE];
-set follow_set[NT_SIZE];
+// set first_set[NT_SIZE];
+// set follow_set[NT_SIZE];
 
 // Array for storing all the FIRST and FOLLOW
 typedef struct first_n_follow_entry{
     char* token_name;
-    set first_set;
-    set follow_set;
+    set *first_set;
+    set *follow_set;
 } FIRST_AND_FOLLOW_ENTRY;
 
-FIRST_AND_FOLLOW_ENTRY *first_and_follow_table[FIRST_AND_FOLLOW_LENGTH];
+FIRST_AND_FOLLOW_ENTRY *first_and_follow_table;
 
 // both function below compute the first and follow set and store them in above two array of same name;
 set *first_set(sym x);

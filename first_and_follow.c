@@ -5,11 +5,13 @@
 #include "first_and_follow.h"
 #include "grammar.h"
 
-/*
+/******** 
 * Why have we added the hash function?
-We are usign the  hash function to be able to find out the GRAMMAR rules containing the
-non-terminal in their LHS so that we can find out their FIRST() and FOLLOW(). 
-*/
+
+* We are usign the  hash function to be able to find out the GRAMMAR rules containing the
+* non-terminal in their LHS so that we can find out their FIRST() and FOLLOW(). 
+*******/
+
 int hashFunction(Non_terminal nt){
 	return (int)nt % HASH_TABLE_SIZE;
 }
@@ -60,14 +62,23 @@ HashTableEntry getRulesByLHS(Non_terminal lhs){
 
 HashTableEntry getRulesByRHS(Non_terminal rhs){
     int ind = hashFunction(rhs);
-    int hashTable
     HashTableEntry rules_entry = HashTableRHS[ind];
     return rules_entry;
 }
 
+// uses the hashFunction to index and get first_and_follow entry from the first_and_follow_table from the sym of token.
+FIRST_AND_FOLLOW_ENTRY *get_first_and_follow_entry(sym x){
+    if(x.isTerminal == true) printf("FIRST_AND_FOLLOW does not exist for terminal_tokens.\n");
+    else {
+        int ind = hashFunction(x.nT);
+        return first_and_follow_table + ind;
+    }
+}
+
+
 void fill_grammar(){
     
-    addRulesToHashTableRHS()
+    // addRulesToHashTableRHS();
 }
 
 // Assuming we already have the grammar rules. 
@@ -121,23 +132,29 @@ set *first_set(sym x){
 }
 
 set *follow_set(sym x){
-    set *list_follow = (set *)malloc(sizeof(set));
-    list_follow->size = 0;
-
-    HashTableEntry start_token = getRulesByRHS(program);
-
-    int count = start_token.count;
-    for(int i = 0; i < count; i++){
-        int ind = start_token.rule_indices[i];
-
-    }
+    // set *list_follow = (set *)malloc(sizeof(set));
+    // list_follow->size = 0;
+    set *follow_eles = NULL;
+    
     
     if (x.isTerminal == true){
         printf("FOLLOW_SET does not exist for TERMINAL_TOKENS.\n");
     } else {
-
+        follow_eles = follow_set_util(x.nT);
     }
+    return follow_eles;
+}
 
+set *follow_set_util(Non_terminal x){
+    set *follow_right = (set *) malloc(sizeof(set)*max_terminal);
+    HashTableEntry hash_entry_rhs = getRulesByRHS(x);
+
+    int count = hash_entry_rhs.count;
+    for(int i = 0; i < count; i++){
+        int rule_index = hash_entry_rhs.rule_indices[i];
+        RULE rule = Grammar[rule_index];
+        
+    }
 }
 
 
