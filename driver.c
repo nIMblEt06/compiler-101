@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <time.h>
 #include "parser.h"
+#include "grammar.h"
+#include "first_and_follow.h"
 
 int main(int argc,char *argv[]){
 	
@@ -41,4 +43,15 @@ int main(int argc,char *argv[]){
 		}
 
 	}
+
+	// Initialized the Hash tables for LHS and RHS of Grammar Rules.
+	initializeHashTable();
+
+	fill_grammar();
+
+	first_and_follow_table[0] = (FIRST_AND_FOLLOW_ENTRY *)malloc(sizeof(FIRST_AND_FOLLOW_ENTRY));
+	set follow_set = first_and_follow_table[0]->follow_set;
+	follow_set.t[follow_set.size] = DOLLAR;
+
+
 }

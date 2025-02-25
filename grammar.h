@@ -29,8 +29,8 @@ typedef enum {
 		TK_PLUS,     TK_MINUS,     TK_MUL,     TK_DIV,      TK_CALL,
 		TK_RECORD,   TK_ENDRECORD, TK_ELSE,    TK_AND,      TK_OR,
 		TK_NOT,      TK_LT,        TK_LE,      TK_EQ,       TK_GT,
-		TK_GE,       TK_NE} Terminal;
-
+		TK_GE,       TK_NE,		   DOLLAR} Terminal;
+// NOTE: Added token DOLLAR;
 
 
 /*Stores the symbols for production rule with bool to differentiate b/w terminal and non_terminal
@@ -73,4 +73,6 @@ void initializeHashTable();
 // returns the set of Rules for a given Non_terminal lhs of the grammar rule.
 HashTableEntry getRulesByLHS(Non_terminal lhs);
 
+// this rule adds rules of grammar to the Grammar Array
+void fill_grammar();
 #endif

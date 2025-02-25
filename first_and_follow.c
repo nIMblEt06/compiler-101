@@ -60,10 +60,15 @@ HashTableEntry getRulesByLHS(Non_terminal lhs){
 
 HashTableEntry getRulesByRHS(Non_terminal rhs){
     int ind = hashFunction(rhs);
+    int hashTable
     HashTableEntry rules_entry = HashTableRHS[ind];
     return rules_entry;
 }
 
+void fill_grammar(){
+    
+    addRulesToHashTableRHS()
+}
 
 // Assuming we already have the grammar rules. 
 set *first_set(sym x){
@@ -116,7 +121,23 @@ set *first_set(sym x){
 }
 
 set *follow_set(sym x){
+    set *list_follow = (set *)malloc(sizeof(set));
+    list_follow->size = 0;
+
+    HashTableEntry start_token = getRulesByRHS(program);
+
+    int count = start_token.count;
+    for(int i = 0; i < count; i++){
+        int ind = start_token.rule_indices[i];
+
+    }
     
+    if (x.isTerminal == true){
+        printf("FOLLOW_SET does not exist for TERMINAL_TOKENS.\n");
+    } else {
+
+    }
+
 }
 
 
