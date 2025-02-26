@@ -19,18 +19,18 @@ void fill_grammar(){
 		if(!token) continue;
 		Grammar[rule_cnt].lhs.isTerminal = false;
 		Grammar[rule_cnt].lhs.nT = get_non_terminal(token);
-		printf("lhs token: %s\n",token);
-		int rule=0;
+		//printf("lhs token: %s\n",token);
 		int rhs_cnt = 0;
-		while((token=strtok(NULL," "))!=NULL){
+		while((token=strtok(NULL," .\n"))!=NULL){
+			size_t length = strlen(token);
 			if((strcmp(token,"EPSILON"))==0){
 				Grammar[rule_cnt].rhs[rhs_cnt].isTerminal= true;
 				Grammar[rule_cnt].rhs[rhs_cnt].t = EPSILON;
-				printf("In EPS %d: %s\n",rule,token);
+				//printf("In EPS %d: %s\n",rule,token);
 			}else{
 				int nonterm = get_non_terminal(token);
 				int term = get_terminal(token);
-				printf("term: %d nonterm: %d , %s\n",term,nonterm,token);
+				//printf("term: %d nonterm: %d , %s, %zu\n",term,nonterm,token,length);
 				if(term!=-1){
 					Grammar[rule_cnt].rhs[rhs_cnt].isTerminal=true;
 					Grammar[rule_cnt].rhs[rhs_cnt].t = term;
@@ -46,7 +46,6 @@ void fill_grammar(){
 			}
 			rhs_cnt++; 
 		}
-		rule++;
 		Grammar[rule_cnt].rhs_count=rhs_cnt;
 		rule_cnt++;
 	}
@@ -56,7 +55,7 @@ void fill_grammar(){
 Non_terminal get_non_terminal(char *str){
 	for (int i = 0; nonTerminals[i] != NULL; i++) {
         if (strcmp(str, nonTerminals[i]) == 0){
-			printf("Matched in NonT  %s\n",str);
+			//printf("Matched in NonT  %s\n",str);
 			return (Non_terminal)i;
 		}
     }
@@ -65,7 +64,7 @@ Non_terminal get_non_terminal(char *str){
 Terminal get_terminal(char *str){
 	for (int i = 0; Terminals[i] != NULL; i++) {
         if (strcmp(str, Terminals[i]) == 0) {
-			printf("Matched in T %s\n",str);
+			//printf("Matched in T %s\n",str);
 			return (Terminal)i;
 		}
     }
@@ -76,6 +75,7 @@ void print_grammar() {
     for (int i = 0; i < rule_cnt; i++) {
         printf("%d: %s -> ", i, nonTerminals[Grammar[i].lhs.nT]);
         int rhs_cnt = Grammar[i].rhs_count;
+		printf("Rule %d: %d\n",i,rhs_cnt);
 		for (int j = 0; j < rhs_cnt; j++) {
             if (Grammar[i].rhs[j].isTerminal)
                 printf("%s ", Terminals[Grammar[i].rhs[j].t]);
@@ -84,4 +84,10 @@ void print_grammar() {
         }
         printf("\n");
     }
+}
+int main(){
+	fill_grammar();
+	printf("%d",rule_cnt);
+	// print_grammar();
+	return 0;
 }
