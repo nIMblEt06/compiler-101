@@ -1,11 +1,14 @@
 {
     "files.associations": {
+        "*.css": "css",
         "*.ejs": "html",
         "__availability": "c",
         "deque": "c",
         "ostream": "c",
         "print": "c",
         "streambuf": "c",
-        "string": "c"
+        "string": "c",
+        "ctype.h": "c",
+        "symboltable.h": "c"
     }
 }

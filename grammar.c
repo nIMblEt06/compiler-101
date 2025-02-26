@@ -14,88 +14,76 @@ void fill_grammar(){
 		return;
 	}
 	char buffer[MAX_BUFF];
-	while(fgets(buffer,MAX_BUFF,fop)){
+	while(fgets(buffer,MAX_BUFF,fop) && rule_cnt < GRAMMAR_MAX_SIZE){
 		char* token = strtok(buffer," .\n");
 		if(!token) continue;
+		
 		Grammar[rule_cnt].lhs.isTerminal = false;
-		Grammar[rule_cnt].lhs.nT = get_non_terminal(token);
-		//printf("lhs token: %s\n",token);
+		Non_terminal nt = get_non_terminal(token);
+		if(nt == -1) {
+			printf("Invalid non-terminal in LHS: %s\n", token);
+			continue;
+		}
+		Grammar[rule_cnt].lhs.nT = nt;
+		
 		int rhs_cnt = 0;
-		while((token=strtok(NULL," .\n"))!=NULL){
-			size_t length = strlen(token);
+		while((token=strtok(NULL," .\n"))!=NULL && rhs_cnt < RULE_SIZE){
 			if((strcmp(token,"EPSILON"))==0){
-				Grammar[rule_cnt].rhs[rhs_cnt].isTerminal= true;
+				Grammar[rule_cnt].rhs[rhs_cnt].isTerminal = true;
 				Grammar[rule_cnt].rhs[rhs_cnt].t = EPSILON;
-				//printf("In EPS %d: %s\n",rule,token);
 			}else{
 				int nonterm = get_non_terminal(token);
 				int term = get_terminal(token);
-				//printf("term: %d nonterm: %d , %s, %zu\n",term,nonterm,token,length);
+				
 				if(term!=-1){
-					Grammar[rule_cnt].rhs[rhs_cnt].isTerminal=true;
+					Grammar[rule_cnt].rhs[rhs_cnt].isTerminal = true;
 					Grammar[rule_cnt].rhs[rhs_cnt].t = term;
-					//printf("%d in term %d: %s\n",term,rule,token);
 				}else if(nonterm!=-1){
-					Grammar[rule_cnt].rhs[rhs_cnt].isTerminal=false;
+					Grammar[rule_cnt].rhs[rhs_cnt].isTerminal = false;
 					Grammar[rule_cnt].rhs[rhs_cnt].t = nonterm;
-					//printf("%d in non term %d: %s\n",nonterm,rule,token);
 				}
 				else{
 					printf("No such symbol %s \n\n",token);
+					continue;  // Skip this invalid token
 				}
 			}
 			rhs_cnt++; 
 		}
-		Grammar[rule_cnt].rhs_count=rhs_cnt;
+		Grammar[rule_cnt].rhs_count = rhs_cnt;
 		rule_cnt++;
 	}
 	fclose(fop);
 }
 
 Non_terminal get_non_terminal(char *str){
-	for (int i = 0; nonTerminals[i] != NULL; i++) {
-        if (strcmp(str, nonTerminals[i]) == 0){
-			//printf("Matched in NonT  %s\n",str);
+	// Count the number of non-terminals (54 as defined in MAX_NON_TERMINALS)
+	for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+		if (nonTerminals[i] != NULL && strcmp(str, nonTerminals[i]) == 0){
 			return (Non_terminal)i;
 		}
-    }
-    return -1; // Not found
+	}
+	return -1; // Not found
 }
+
 Terminal get_terminal(char *str){
-	for (int i = 0; Terminals[i] != NULL; i++) {
-        if (strcmp(str, Terminals[i]) == 0) {
-			//printf("Matched in T %s\n",str);
+	// Count the number of terminals (61 as defined in MAX_TERMINALS)
+	for (int i = 0; i < MAX_TERMINALS; i++) {
+		if (Terminals[i] != NULL && strcmp(str, Terminals[i]) == 0) {
 			return (Terminal)i;
 		}
-    }
-    return -1; // Not found
+	}
+	return -1; // Not found
 }
 
 void print_grammar() {
     for (int i = 0; i < rule_cnt; i++) {
-        // Add bounds checking for Grammar array
-        if (Grammar[i].lhs.nT < 0 || Grammar[i].lhs.nT >= MAX_NON_TERMINALS) {
-            printf("Error: Invalid non-terminal index %d in rule %d\n", Grammar[i].lhs.nT, i);
-            continue;
-        }
-        
         printf("%d: %s -> ", i, nonTerminals[Grammar[i].lhs.nT]);
         int rhs_cnt = Grammar[i].rhs_count;
         
         for (int j = 0; j < rhs_cnt; j++) {
             if (Grammar[i].rhs[j].isTerminal) {
-                // Add bounds checking for terminals
-                if (Grammar[i].rhs[j].t < 0 || Grammar[i].rhs[j].t >= MAX_TERMINALS) {
-                    printf("Error: Invalid terminal index %d in rule %d\n", Grammar[i].rhs[j].t, i);
-                    continue;
-                }
                 printf("%s ", Terminals[Grammar[i].rhs[j].t]);
             } else {
-                // Add bounds checking for non-terminals
-                if (Grammar[i].rhs[j].t < 0 || Grammar[i].rhs[j].t >= MAX_NON_TERMINALS) {
-                    printf("Error: Invalid non-terminal index %d in rule %d\n", Grammar[i].rhs[j].t, i);
-                    continue;
-                }
                 printf("%s ", nonTerminals[Grammar[i].rhs[j].t]);
             }
         }
@@ -105,6 +93,6 @@ void print_grammar() {
 int main(){
 	fill_grammar();
 	// printf("%d",rule_cnt);
-	print_grammar();
+	// print_grammar();
 	return 0;
 }
