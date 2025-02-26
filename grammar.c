@@ -73,21 +73,38 @@ Terminal get_terminal(char *str){
 
 void print_grammar() {
     for (int i = 0; i < rule_cnt; i++) {
+        // Add bounds checking for Grammar array
+        if (Grammar[i].lhs.nT < 0 || Grammar[i].lhs.nT >= MAX_NON_TERMINALS) {
+            printf("Error: Invalid non-terminal index %d in rule %d\n", Grammar[i].lhs.nT, i);
+            continue;
+        }
+        
         printf("%d: %s -> ", i, nonTerminals[Grammar[i].lhs.nT]);
         int rhs_cnt = Grammar[i].rhs_count;
-		printf("Rule %d: %d\n",i,rhs_cnt);
-		for (int j = 0; j < rhs_cnt; j++) {
-            if (Grammar[i].rhs[j].isTerminal)
+        
+        for (int j = 0; j < rhs_cnt; j++) {
+            if (Grammar[i].rhs[j].isTerminal) {
+                // Add bounds checking for terminals
+                if (Grammar[i].rhs[j].t < 0 || Grammar[i].rhs[j].t >= MAX_TERMINALS) {
+                    printf("Error: Invalid terminal index %d in rule %d\n", Grammar[i].rhs[j].t, i);
+                    continue;
+                }
                 printf("%s ", Terminals[Grammar[i].rhs[j].t]);
-            else
-                printf("%s ", nonTerminals[Grammar[i].rhs[j].nT]);
+            } else {
+                // Add bounds checking for non-terminals
+                if (Grammar[i].rhs[j].t < 0 || Grammar[i].rhs[j].t >= MAX_NON_TERMINALS) {
+                    printf("Error: Invalid non-terminal index %d in rule %d\n", Grammar[i].rhs[j].t, i);
+                    continue;
+                }
+                printf("%s ", nonTerminals[Grammar[i].rhs[j].t]);
+            }
         }
         printf("\n");
     }
 }
 int main(){
 	fill_grammar();
-	printf("%d",rule_cnt);
-	// print_grammar();
+	// printf("%d",rule_cnt);
+	print_grammar();
 	return 0;
 }

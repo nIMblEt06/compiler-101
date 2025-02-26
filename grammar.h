@@ -11,6 +11,8 @@
 #define RULE_SIZE 25
 #define GRAMMAR_MAX_SIZE 101
 #define HASH_TABLE_SIZE 53 
+#define MAX_NON_TERMINALS 42  // Based on the size of nonTerminals array
+#define MAX_TERMINALS 56     // Based on the size of Terminals array
 
 typedef enum {program,mainFunction,otherFunctions,function,input_par,output_par,parameter_list,dataType,primitiveDatatype,
 	constructedDatatype,remaining_list,stmts,typeDefinitions,typeDefinition,fieldDefinitions,fieldDefinition,moreFields,
