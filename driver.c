@@ -63,27 +63,19 @@ int main(int argc,char *argv[]){
 		entry->first_set = first_set_token;
 	}
 
-	// Explicitly adding the token for "program" start_token.
+	// Explicitly adding "program" start_token and adding "DOLLAR" to its follow_set
 	int program_ind = hashFunction(program);
 	FIRST_AND_FOLLOW_ENTRY *fnf_entry = first_and_follow_table + program_ind;
 	fnf_entry->follow_set = (set *) malloc(sizeof(set)*max_terminal);
-	fnf_entry->follow_set->t[fnf_entry->follow_set->size] = $;
+	fnf_entry->follow_set->t[fnf_entry->follow_set->size] = DOLLAR;
 	fnf_entry->follow_set->size += 1;
-
-	for(int i = 0; i < GRAMMAR_MAX_SIZE; i++){
-		sym *rhs_rule = Grammar[i].rhs;
-		for (int i = 0; i < RULE_SIZE; i++){
-			set *token_follow_set = follow_set(rhs_rule[i]);
-		}
-	}
-
 	
 	// Finding the Follow set for the all the elements next. 
-	
-
-
-	// set follow_set = first_and_follow_table[0].follow_set;
-	// follow_set.t[follow_set.size] = DOLLAR;
+	for(Non_terminal i = program; i <= A; i++){
+		int tkn_ind = hashFunction(i);
+		FIRST_AND_FOLLOW_ENTRY *fnf_entry = first_and_follow_table + tkn_ind;
+		fnf_entry->follow_set = follow_set_util(i);
+	}
 
 
 }

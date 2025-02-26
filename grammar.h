@@ -29,8 +29,9 @@ typedef enum {
 		TK_PLUS,     TK_MINUS,     TK_MUL,     TK_DIV,      TK_CALL,
 		TK_RECORD,   TK_ENDRECORD, TK_ELSE,    TK_AND,      TK_OR,
 		TK_NOT,      TK_LT,        TK_LE,      TK_EQ,       TK_GT,
-		TK_GE,       TK_NE,		   $} Terminal;
-// NOTE: Added token DOLLAR;
+		TK_GE,       TK_NE,		   DOLLAR, 	   $,			EPSILON} Terminal;
+// NOTE: Added token DOLLAR, $ and EPSILON;
+// $ sign can be used a end of list marker.
 
 
 /*Stores the symbols for production rule with bool to differentiate b/w terminal and non_terminal

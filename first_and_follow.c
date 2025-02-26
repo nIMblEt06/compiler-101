@@ -81,10 +81,11 @@ void fill_grammar(){
     // addRulesToHashTableRHS();
 }
 
+// TO-DO:
+// -> Optimize first_and_follow_set using Memoisation.
+
 // Assuming we already have the grammar rules. 
 set *first_set(sym x){
-    // sym x -> Non terminal whose first(x) we want to find. 
-
     // TO-DO
     // -> Optimize using memoization.
     set *list_first = (set *) malloc(sizeof(set));
@@ -132,19 +133,16 @@ set *first_set(sym x){
 }
 
 set *follow_set(sym x){
-    // set *list_follow = (set *)malloc(sizeof(set));
-    // list_follow->size = 0;
-    set *follow_eles = NULL;
-    
-    
+    set *follow_right = NULL;
     if (x.isTerminal == true){
         printf("FOLLOW_SET does not exist for TERMINAL_TOKENS.\n");
     } else {
-        follow_eles = follow_set_util(x.nT);
+        set *follow_right = follow_set_util(x.nT);
     }
-    return follow_eles;
+    return follow_right;
 }
 
+// Used a follow_set_util as seperate function, cause we practically need to find the FOLLOW(Non_terminal) token wise.
 set *follow_set_util(Non_terminal x){
     set *follow_right = (set *) malloc(sizeof(set)*max_terminal);
     HashTableEntry hash_entry_rhs = getRulesByRHS(x);
@@ -153,8 +151,51 @@ set *follow_set_util(Non_terminal x){
     for(int i = 0; i < count; i++){
         int rule_index = hash_entry_rhs.rule_indices[i];
         RULE rule = Grammar[rule_index];
-        
+        // Assuming the RULE_SIZE constant accounts for 1 End-Of-Rule character.
+
+        for(int j = 0;j < RULE_SIZE; j++){  
+            if (rule.rhs[j].isTerminal == false && rule.rhs[j].nT == x){
+                // if current token is our input target token.
+                if(j + 1 < RULE_SIZE && rule.rhs[j+1].isTerminal==true){
+                    if (rule.rhs[j+1].t == $){
+                        // the token next to our token is EOL char.
+                        // therefore, taking follow(LHS)
+                        set *follow = follow_set(rule.lhs);
+                        for(int k =0; k < follow->size; k++){
+                            follow_right->t[follow_right->size] = follow->t[k];
+                        }
+                    } else {
+                        // the token next to my token is a terminal token.
+                        set *first_rhs = first_set(rule.rhs[j+1]);
+                        for(int k =0; k < first_rhs->size; k++){
+                            follow_right->t[follow_right->size] = first_rhs->t[k];
+                        }
+                        if (first_rhs->containsEpsilon == false){
+                            break;
+                        } else {
+                            continue;
+                        }
+                    }
+                } else { 
+                    // if the token is non terminal
+                    set *first_rhs = first_set(rule.rhs[j+1]);
+                    for(int k =0; k < first_rhs->size; k++){
+                        follow_right->t[follow_right->size] = first_rhs->t[k];
+                    }
+                    if (first_rhs->containsEpsilon == false){
+                        break;
+                    } else {
+                        continue;
+                    }
+                    
+                }
+            } else continue;
+        }
     }
+    return follow_right;
 }
+
+
+
 
 
