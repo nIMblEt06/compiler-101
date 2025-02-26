@@ -10,12 +10,12 @@
 
 #define RULE_SIZE 25
 #define GRAMMAR_MAX_SIZE 101
-#define HASH_TABLE_SIZE 53
+#define HASH_TABLE_SIZE 53 
 
 typedef enum {program,mainFunction,otherFunctions,function,input_par,output_par,parameter_list,dataType,primitiveDatatype,
 	constructedDatatype,remaining_list,stmts,typeDefinitions,typeDefinition,fieldDefinitions,fieldDefinition,moreFields,
 	declarations,declaration,global_or_not,otherStmts,stmt,assignmentStmt,singleOrRecId,funCallStmt,outputParameters,
-	inputParameters,iterativeStmt,conditionalStmt,ioStmt,arithmeticExpression,   op   ,booleanExpression,var,logicalOp,
+	inputParameters,iterativeStmt,conditionalStmt,ioStmt,arithmeticExpression, operator ,booleanExpression,var,logicalOp,
 	relationalOp,returnStmt,optionalReturn,idList,more_ids,definetypestmt,A} Non_terminal;
 typedef enum {
 		TK_ASSIGNOP, TK_COMMENT,   TK_FIELDID, TK_ID,       TK_NUM,
@@ -47,7 +47,7 @@ typedef struct symbol{
 typedef struct Rule{
 	sym lhs;
 	sym rhs[RULE_SIZE];
-	int rule_number;
+	int rhs_count;
 }RULE;
 
 // Array of all production rules
@@ -76,4 +76,7 @@ HashTableEntry getRulesByLHS(Non_terminal lhs);
 
 // this rule adds rules of grammar to the Grammar Array
 void fill_grammar();
+
+Non_terminal get_non_terminal(char *str);
+Terminal get_terminal(char *str);
 #endif

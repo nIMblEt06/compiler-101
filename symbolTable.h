@@ -14,8 +14,8 @@ typedef struct Table{
 }Table;
 char* search(Table* table,char* value);
 
-extern char *Terminals[];
-extern char *nonTerminals[];
+extern const char *Terminals[];
+extern const char *nonTerminals[];
 
 
 long long hashFunc(char *inp);
