@@ -193,7 +193,7 @@ token getNextToken(FILE* fp) {
 			else if(c==' '||c=='\t'){
 				state = 0;
 			}
-			else if(isalpha(c)){
+			else if(islower(c)){
 				if(c=='b'||c=='c'||c=='d'){
 					state = 35;
 				}
@@ -318,64 +318,329 @@ token getNextToken(FILE* fp) {
 			}
 			break;
 		case 15:
+			tk.name="TK_NE";
+			tk.lexeme_value = "!=";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 16:
+			c = getChar(fp);
+			if(c=='='){
+				state = 17;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Symbol";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 17:
+			tk.name="TK_EQ";
+			tk.lexeme_value = "==";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 18:
+			c = getChar(fp);
+			if(c=='@'){
+				state = 19;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Symbol";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 19:
+			c = getChar(fp);
+			if(c=='@'){
+				state = 20;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Symbol";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 20:
+			tk.name="TK_OR";
+			tk.lexeme_value = "@@@";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 21:
+			c = getChar(fp);
+			if(c=='&'){
+				state = 22;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Symbol";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 22:
+			c = getChar(fp);
+			if(c=='&'){
+				state = 23;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Symbol";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 23:
+			tk.name="TK_AND";
+			tk.lexeme_value = "&&&";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 24:
+			c = getChar(fp);
+			if(c=='-'){
+				state = 25;
+			}
+			else if(c=='='){
+				state = 28;
+			}
+			else{
+				state = 29;
+			}
 			break;
 		case 25:
+			c = getChar(fp);
+			if(c=='-'){
+				state = 26;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Symbol";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 26:
+			c = getChar(fp);
+			if(c=='-'){
+				state = 27;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Symbol";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 27:
+			tk.name="TK_ASSIGNOP";
+			tk.lexeme_value = "<---";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 28:
+			tk.name="TK_LE";
+			tk.lexeme_value = "<=";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 29:
+			retract(1);
+			tk.name="TK_LT";
+			tk.lexeme_value = "<";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 30:
+			c = getChar(fp);
+			if(c=='='){
+				state = 31;
+			}
+			else{
+				state = 32;
+			}
+			break;
 			break;
 		case 31:
+			tk.name="TK_GE";
+			tk.lexeme_value = ">=";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 32:
+			retract(1);
+			tk.name="TK_GT";
+			tk.lexeme_value = ">";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			return tk;
 			break;
 		case 33:
+			c = getChar(fp);
+			if(c=='\n'){
+				state = 34;
+			}
+			else{
+				state = 33;
+			}
 			break;
 		case 34:
+			tk.name="TK_COMMENT";
+			tk.lexeme_value = "%";
+			lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+			lineNo++;
+			return tk;
 			break;
 		case 35:
+			c = getChar(fp);
+			if(islower(c)){
+				state = 39;
+			}
+			else if(c>='2'&&c<='7'){
+				state  = 36;
+			}
+			else{
+				state = 40;
+			}
 			break;
 		case 36:
+			if(c=='b'||c=='c'||c=='d'){
+				state = 36;
+			}
+			else if(c>='2'&&c<='7'){
+				state = 37;
+			}
+			else{
+				state = 38;
+			}
 			break;
 		case 37:
+			if(c>='2'&&c<='7'){
+				state = 37;
+			}
+			else{
+				state = 38;
+			}
 			break;
 		case 38:
+		//have to figure How to handle scope.
+			retract(1);
+			int lex_len = getLen();
+			if(lex_len>=2 && lex_len<=20){
+				tk.name = "TK_ID";
+				tk.lexeme_value = getName();
+				lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+				return tk;
+			}
+			else{
+				tk.name = "ERROR";
+				if(lex_len<2){
+					tk.lexeme_value = "identifier shorter than 2";
+				}
+				if(lex_len>20){
+					tk.lexeme_value = "identifier longer than 20";
+				}
+				lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 39:
+			c = getChar(fp);
+			if(islower(c)){
+				state = 39;
+			}
+			else{
+				state =40;
+			}
 			break;
 		case 40:
+			retract(1);
+			tk.lexeme_value = getName();
+			char *keyword = search(symbol_table,tk.lexeme_value);
+			if(strcmp(keyword,"\0")==0){
+				tk.name = "TK_FIELDID";
+			}
+			else{
+				tk.name = keyword;
+			}
+			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+      		return tk;
 			break;
 		case 41:
+			c = getChar(fp);
+			if(isalpha(c)){
+				state = 42;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Pattern";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 42:
+			c = getChar(fp);
+			if(isalpha(c)){
+				state=42;
+			}
+			else if(isdigit(c)){
+				state = 43;
+			}
+			else{
+				state = 45;
+			}
 			break;
 		case 43:
+			c = getChar(fp);
+			if(isdigit(c)){
+				state = 43;
+			}
+			else{
+				state =44;
+			}
 			break;
 		case 44:
+			retract(1);
+			tk.name = "TK_FUNID";
+			tk.lexeme_value = getName();
+			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+			return tk;
 			break;
 		case 45:
 			break;
