@@ -643,32 +643,184 @@ token getNextToken(FILE* fp) {
 			return tk;
 			break;
 		case 45:
+			retract(1);
+			int lex_len = getLen();
+			if(lex_len<=30){
+				tk.lexeme_value = getName();
+				char *keyword = search(symbol_table,tk.lexeme_value);
+				if(strcmp(keyword,"\0")==0){
+					tk.name = "TK_FUNID";
+				}
+				else{
+					tk.name = keyword;
+				}
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+      			return tk;
+			}
+			else {
+				tk.name = "ERROR";
+				tk.lexeme_value = "FUNID cannot be longer than 30";
+				lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 46:
+			c = getChar(fp);
+			if(islower(c)){
+				state = 47;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Pattern";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 47:
+			c = getChar(fp);
+			if(islower(c)){
+				state=47;
+			}
+			else{
+				state=48;
+			}
 			break;
 		case 48:
+			retract(1);
+			tk.name = "TK_RUID";
+			tk.lexeme_value = getName();
+			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+			return tk;
 			break;
 		case 49:
+			c = getChar(fp);
+			if(isdigit(c)){
+				state=49;
+			}
+			else if(c=='.'){
+				state = 51;
+			}
+			else{
+				state=50;
+			}
 			break;
 		case 50:
+			retract(1);
+			tk.name = "TK_NUM";
+			tk.num = atoi(getName());
+			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+			return tk;
 			break;
 		case 51:
+			//if we do not encounter a number do we retract and return "ERROR" or TK_NUM
+			//Currently only returning "ERROR" but maybe need of consideration
+			c = getChar(fp);
+			if(isdigit(c)){
+				state=52;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Pattern";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 52:
+			c = getChar(fp);
+			if(isdigit(c)){
+				state=53;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Pattern";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 53:
+			c = getChar(fp);
+			if(c=='E'){
+				state=55;
+			}
+			else{
+				state=54;
+			}
 			break;
 		case 54:
+			retract(1);
+			tk.name = "TK_RNUM";
+			tk.num = atof(getName());
+			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+			return tk;
 			break;
 		case 55:
+			c = getChar(fp);
+			if(isdigit(c)){
+				state = 57;
+			}
+			else if(c=='+'||c=='-'){
+				state = 56;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Pattern";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 56:
+			c = getChar(fp);
+			if(isdigit(c)){
+				state = 57;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Pattern";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 57:
+			c = getChar(fp);
+			if(isdigit(c)){
+				state = 58;
+			}
+			else{
+				retract(1);
+				tk.name = "ERROR";
+				char *dest = get_name();
+				const char *sym = " is an Unknown Pattern";
+				strcat(dest, sym);
+				tk.lexeme_value = dest;
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 			break;
 		case 58:
+			tk.name = "TK_RNUM";
+			tk.num = atof(getName());
+			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+			return tk;
 			break;
 		case 59:
 			break;
