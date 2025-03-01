@@ -5,13 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern char buffer[BUFFER_SIZE];
-extern Table *symbol_table;
-extern int lexemeBegin;
-extern int retraction;
-extern int buffer_ptr;
-extern int lineNo;
-extern int state;
+ char buffer[BUFFER_SIZE];
+ Table *symbol_table;
+ int lexemeBegin;
+ int retraction;
+ int buffer_ptr;
+ int lineNo;
+ int state;
 
 void removeComments(char *testCaseFile, char *cleanFile) {
     FILE *testFile = fopen(testCaseFile, "r");
@@ -46,7 +46,7 @@ void retract(int num) {
 void initLexer() {
     buffer_ptr = 0;
     lexemeBegin = 0;
-    lineNo = 1;
+    lineNo = 0;
     for (int i = 0; i < BUFFER_SIZE; i++) {
         buffer[i] = '\0';
     }
@@ -127,17 +127,22 @@ char getChar(FILE* fp) {
 token getNextToken(FILE* fp) {
     token tk;
     state = 0;
+	char c;
+	int lex_len=0;
     tk.line = lineNo;
 	while(true){
 		switch (state)
 		{
 		case 0:
-			char c = getChar(fp);
+			c = getChar(fp);
 			if(c=='+'){
 				state = 1;
 			}
 			else if(c=='-'){
 				state = 2;
+			}
+			else if(c=='*'){
+				state = 3;
 			}
 			else if(c=='/'){
 				state = 4;
@@ -191,7 +196,7 @@ token getNextToken(FILE* fp) {
 				state = 33;
 			}
 			else if(c==' '||c=='\t'){
-				state = 0;
+				state = 60;
 			}
 			else if(islower(c)){
 				if(c=='b'||c=='c'||c=='d'){
@@ -213,9 +218,14 @@ token getNextToken(FILE* fp) {
 			else if(c=='\n'){
 				state=59;
 			}
+			else if(c==EOF){
+				tk.name = "EOF";
+				tk.lexeme_value = "EOF";
+				return tk;
+			}
 			else{
 				tk.name = "ERROR";
-        		char *dest = get_name();
+        		char *dest = getName();
         		const char *sym = " is an Unknown Symbol";
         		strcat(dest, sym);
         		tk.lexeme_value = dest;
@@ -309,7 +319,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-        		char *dest = get_name();
+        		char *dest = getName();
         		const char *sym = " is an Unknown Symbol";
         		strcat(dest, sym);
         		tk.lexeme_value = dest;
@@ -331,7 +341,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Symbol";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -353,7 +363,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Symbol";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -369,7 +379,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Symbol";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -391,7 +401,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Symbol";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -407,7 +417,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Symbol";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -441,7 +451,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Symbol";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -457,7 +467,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Symbol";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -536,6 +546,7 @@ token getNextToken(FILE* fp) {
 			}
 			break;
 		case 36:
+			c = getChar(fp);
 			if(c=='b'||c=='c'||c=='d'){
 				state = 36;
 			}
@@ -547,6 +558,7 @@ token getNextToken(FILE* fp) {
 			}
 			break;
 		case 37:
+			c = getChar(fp);
 			if(c>='2'&&c<='7'){
 				state = 37;
 			}
@@ -557,7 +569,7 @@ token getNextToken(FILE* fp) {
 		case 38:
 		//have to figure How to handle scope.
 			retract(1);
-			int lex_len = getLen();
+			lex_len = getLen();
 			if(lex_len>=2 && lex_len<=20){
 				tk.name = "TK_ID";
 				tk.lexeme_value = getName();
@@ -606,7 +618,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Pattern";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -644,7 +656,7 @@ token getNextToken(FILE* fp) {
 			break;
 		case 45:
 			retract(1);
-			int lex_len = getLen();
+			lex_len = getLen();
 			if(lex_len<=30){
 				tk.lexeme_value = getName();
 				char *keyword = search(symbol_table,tk.lexeme_value);
@@ -672,7 +684,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Pattern";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -712,6 +724,7 @@ token getNextToken(FILE* fp) {
 			retract(1);
 			tk.name = "TK_NUM";
 			tk.num = atoi(getName());
+			// printf(" %d \n",tk.num);
 			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
 			return tk;
 			break;
@@ -725,7 +738,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Pattern";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -741,7 +754,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Pattern";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -761,7 +774,7 @@ token getNextToken(FILE* fp) {
 		case 54:
 			retract(1);
 			tk.name = "TK_RNUM";
-			tk.num = atof(getName());
+			tk.rnum = atof(getName());
 			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
 			return tk;
 			break;
@@ -776,7 +789,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Pattern";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -792,7 +805,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Pattern";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -808,7 +821,7 @@ token getNextToken(FILE* fp) {
 			else{
 				retract(1);
 				tk.name = "ERROR";
-				char *dest = get_name();
+				char *dest = getName();
 				const char *sym = " is an Unknown Pattern";
 				strcat(dest, sym);
 				tk.lexeme_value = dest;
@@ -818,14 +831,29 @@ token getNextToken(FILE* fp) {
 			break;
 		case 58:
 			tk.name = "TK_RNUM";
-			tk.num = atof(getName());
+			tk.rnum = atof(getName());
 			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
 			return tk;
 			break;
 		case 59:
+			tk.name = "LINE_BREAK";
+			tk.lexeme_value = "\\n";
+			lineNo++;
+			lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+			return tk;
 			break;
-		default:
-			break;
+		case 60:
+			c= getChar(fp);
+			if(c==' '||c=='\t'){
+				state = 60;
+			}
+			else{
+				retract(1);
+				tk.name = "SPACE";
+				tk.lexeme_value = getName();
+				lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+				return tk;
+			}
 		}
 	}
 
@@ -833,6 +861,44 @@ token getNextToken(FILE* fp) {
 
 }
 
-void printToken(char *testfile) {
-    
+void printTokens(FILE *testfile) {
+    printf("\n%-15s %-20s %-10s\n", "TOKEN", "LEXEME", "LINE NO.");
+    printf("------------------------------------------------------\n");
+
+    while (1) {
+        token tk = getNextToken(testfile);
+
+        // Stop if end-of-file is reached
+        if (strcmp(tk.name, "EOF") == 0) {
+            break;
+        }
+		if(strcmp(tk.name, "SPACE") == 0) continue;
+		if(strcmp(tk.name, "TK_NUM") == 0){
+			printf("%-15s %-20d %-10d\n", tk.name, tk.num, tk.line);
+		}
+		else if(strcmp(tk.name, "TK_RNUM") == 0){
+			printf("%-15s %-20f %-10d\n", tk.name, tk.rnum, tk.line);
+		}
+        // Pretty-printing tokens
+        else printf("%-15s %-20s %-10d\n", tk.name, tk.lexeme_value, tk.line);
+    }
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <testfile>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *fp = fopen(argv[1], "r");
+    if (!fp) {
+        printf("Error: Could not open file %s\n", argv[1]);
+        return 1;
+    }
+	initLexer();
+    // Print all tokens in the file
+    printTokens(fp);
+
+    fclose(fp);
+    return 0;
 }
