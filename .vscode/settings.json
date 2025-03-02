@@ -12,6 +12,7 @@
         "symboltable.h": "c",
         "first_and_follow.h": "c",
         "grammar.h": "c",
-        "parser.h": "c"
+        "parser.h": "c",
+        "parse_table.h": "c"
     }
 }

@@ -1,0 +1,47 @@
+% This is a test program that exercises various grammar constructs
+
+_main
+type int : x ;
+type real : y ;
+type record #student : z ;
+
+% Testing record definition
+type record #student
+    type int : id ;
+    type real : gpa ;
+    type int : age ;
+endrecord
+
+% Testing union definition
+type union #shape
+    type real : radius ;
+    type real : length ;
+    type real : width ;
+endunion
+
+% Testing while loop with arithmetic and boolean expressions
+x <--- 10 ;
+while ( x > 0 )
+    y <--- y + 1.5 ;
+    x <--- x - 1 ;
+endwhile
+
+% Testing if-then-else with nested expressions
+if ( x <= 0 &&& y >= 5.0 )
+then
+    write ( x ) ;
+    write ( y ) ;
+else
+    read ( x ) ;
+    read ( y ) ;
+endif
+
+% Testing function definition and call
+_calculateArea input parameter list [ type int : length, type int : width ] output parameter list [ type int : area ]
+    area <--- length * width ;
+end
+
+% Testing function call with parameters
+[ area ] <--- call _calculateArea with parameters [ 10, 20 ] ;
+
+end 

@@ -44,4 +44,8 @@ set *first_set(sym x);
 //follow set uses first_set
 set *follow_set(sym x);
 
+// Set operations
+set* create_set();
+void add_to_set(set* s, Terminal t);
+
 #endif

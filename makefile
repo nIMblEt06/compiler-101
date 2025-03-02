@@ -1,5 +1,5 @@
-output: driver.o first_and_follow.o lexer.o parser.o terminals.o symbolTable.o grammar.o
-	gcc -w -O3 driver.o first_and_follow.o lexer.o parser.o terminals.o symbolTable.o grammar.o -o compiler
+output: driver.o first_and_follow.o lexer.o parser.o terminals.o symbolTable.o grammar.o parse_table.o tree.o
+	gcc -w -O3 driver.o first_and_follow.o lexer.o parser.o terminals.o symbolTable.o grammar.o parse_table.o tree.o -o compiler
 
 lexer.o: lexer.h lexer.c 
 	gcc -w -c -g lexer.c
@@ -21,6 +21,12 @@ symbolTable.o: symbolTable.c symbolTable.h
 
 grammar.o: grammar.c grammar.h
 	gcc -w -c -g grammar.c
+
+parse_table.o: parse_table.c parse_table.h
+	gcc -w -c -g parse_table.c
+
+tree.o: tree.c tree.h
+	gcc -w -c -g tree.c
 
 clean:
 	rm -f *.o compiler

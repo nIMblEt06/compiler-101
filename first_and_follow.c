@@ -251,6 +251,28 @@ set *follow_set_util(Non_terminal x){
     return follow_right;
 }
 
+set* create_set() {
+    set* new_set = (set*)malloc(sizeof(set));
+    new_set->size = 0;
+    new_set->containsEpsilon = false;
+    return new_set;
+}
+
+void add_to_set(set* s, Terminal t) {
+    // Check if terminal already exists in set
+    for (int i = 0; i < s->size; i++) {
+        if (s->t[i] == t) return;
+    }
+    
+    // Add new terminal if space available
+    if (s->size < max_terminal) {
+        s->t[s->size++] = t;
+        if (t == EPSILON) {
+            s->containsEpsilon = true;
+        }
+    }
+}
+
 
 
 

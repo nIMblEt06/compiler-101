@@ -5,6 +5,7 @@
 *******************************************************************************/
 #include "grammar.h"
 #define MAX_BUFF 256
+
 int rule_cnt=0;
 
 Non_terminal get_non_terminal(char *str){
