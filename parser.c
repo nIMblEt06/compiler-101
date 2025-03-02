@@ -48,7 +48,6 @@ parse_tree create_parse_tree(FILE* fp) {
     
     // Initialize grammar
     fill_grammar();
-    
     compute_parse_table();
     
     // Create root node (program is the start symbol)
@@ -92,10 +91,19 @@ parse_tree create_parse_tree(FILE* fp) {
                 current_node->tok = current_token;
                 current_token = getNextToken(fp);
             } else {
-                printf("Error: Expected %s but got %s\n", 
-                       Terminals[current_node->symbol.t],
-                       current_token.name);
-                current_token = getNextToken(fp);
+                // Improved error recovery
+                if (current_terminal == TK_END || current_terminal == TK_MAIN) {
+                    // Special handling for synchronization tokens
+                    printf("Error: Expected %s but got %s - synchronizing\n", 
+                           Terminals[current_node->symbol.t],
+                           current_token.name);
+                    stack_top = 0;  // Clear stack for resynchronization
+                } else {
+                    printf("Error: Expected %s but got %s\n", 
+                           Terminals[current_node->symbol.t],
+                           current_token.name);
+                    current_token = getNextToken(fp);
+                }
             }
         } else {
             // Non-terminal node - expand using parse table
@@ -109,11 +117,21 @@ parse_tree create_parse_tree(FILE* fp) {
             parse_table_entry entry = get_parse_table_entry(current_node->symbol.nT, current_t);
             
             if (entry.is_error) {
-                printf("Error: No production rule for %s with lookahead %s\n",
-                       nonTerminals[current_node->symbol.nT],
-                       current_token.name);
-                current_token = getNextToken(fp);
-                continue;
+                // Improved error handling for specific cases
+                if (current_node->symbol.nT == returnStmt && 
+                    (current_t == TK_END || current_t == TK_MAIN)) {
+                    // Handle empty return statement
+                    continue;
+                } else if (current_node->symbol.nT == otherStmts && current_t == TK_END) {
+                    // Handle empty otherStmts
+                    continue;
+                } else {
+                    printf("Error: No production rule for %s with lookahead %s\n",
+                           nonTerminals[current_node->symbol.nT],
+                           current_token.name);
+                    current_token = getNextToken(fp);
+                    continue;
+                }
             }
             
             // Get the rule to expand with

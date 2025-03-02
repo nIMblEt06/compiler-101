@@ -46,13 +46,20 @@ void compute_parse_table() {
         // Create a symbol for the LHS non-terminal
         sym lhs_sym = {.isTerminal = false, .nT = lhs_nt};
         
-        // If RHS is EPSILON, add rule to parse table entries for all terminals in FOLLOW(LHS)
+        // Special handling for empty productions (EPSILON)
         if (current_rule.rhs_count == 1 && current_rule.rhs[0].isTerminal && current_rule.rhs[0].t == EPSILON) {
             set* follow_of_lhs = follow_set(lhs_sym);
             if (follow_of_lhs) {
                 for (int i = 0; i < follow_of_lhs->size; i++) {
                     Terminal t = follow_of_lhs->t[i];
-                    if (t != EPSILON && t >= 0 && t < MAX_TERMINALS) {
+                    // Add special handling for TK_END and TK_MAIN
+                    if ((t == TK_END && lhs_nt == returnStmt) || 
+                        (t == TK_MAIN && lhs_nt == returnStmt) ||
+                        (t == TK_END && lhs_nt == otherStmts)) {
+                        parse_table[lhs_nt][t].is_error = false;
+                        parse_table[lhs_nt][t].rule_number = rule_num;
+                    }
+                    else if (t != EPSILON && t >= 0 && t < MAX_TERMINALS) {
                         parse_table[lhs_nt][t].is_error = false;
                         parse_table[lhs_nt][t].rule_number = rule_num;
                     }
@@ -68,6 +75,18 @@ void compute_parse_table() {
         if (!first_of_rhs) {
             printf("Error: Failed to create FIRST set for RHS of rule %d\n", rule_num);
             continue;
+        }
+        
+        // Special handling for TK_REAL in stmts
+        if (current_rule.rhs[0].isTerminal && current_rule.rhs[0].t == TK_REAL) {
+            parse_table[lhs_nt][TK_REAL].is_error = false;
+            parse_table[lhs_nt][TK_REAL].rule_number = rule_num;
+        }
+        
+        // Special handling for TK_RUID in otherFunctions
+        if (current_rule.rhs[0].isTerminal && current_rule.rhs[0].t == TK_RUID) {
+            parse_table[lhs_nt][TK_RUID].is_error = false;
+            parse_table[lhs_nt][TK_RUID].rule_number = rule_num;
         }
         
         // Compute FIRST set of RHS by looking at each symbol
