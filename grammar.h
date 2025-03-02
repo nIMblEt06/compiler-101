@@ -78,6 +78,8 @@ typedef struct HashTableEntry{
 HashTableEntry HashTableLHS[HASH_TABLE_SIZE];
 HashTableEntry HashTableRHS[HASH_TABLE_SIZE*2];
 
+extern int rule_cnt;  // Make rule_cnt accessible across files
+
 int hashFunction(Non_terminal nt);
 
 // function to enter rule into grammar hash table
@@ -94,4 +96,7 @@ void fill_grammar();
 
 Non_terminal get_non_terminal(char *str);
 Terminal get_terminal(char *str);
+
+void print_grammar();
+
 #endif

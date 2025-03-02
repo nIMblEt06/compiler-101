@@ -884,21 +884,21 @@ void printTokens(FILE *testfile) {
     }
 }
 
-int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Usage: %s <testfile>\n", argv[0]);
-        return 1;
-    }
+// int main(int argc, char *argv[]) {
+//     if (argc < 2) {
+//         printf("Usage: %s <testfile>\n", argv[0]);
+//         return 1;
+//     }
 
-    FILE *fp = fopen(argv[1], "r");
-    if (!fp) {
-        printf("Error: Could not open file %s\n", argv[1]);
-        return 1;
-    }
-	initLexer();
-    // Print all tokens in the file
-    printTokens(fp);
+//     FILE *fp = fopen(argv[1], "r");
+//     if (!fp) {
+//         printf("Error: Could not open file %s\n", argv[1]);
+//         return 1;
+//     }
+// 	initLexer();
+//     // Print all tokens in the file
+//     printTokens(fp);
 
-    fclose(fp);
-    return 0;
-}
+//     fclose(fp);
+//     return 0;
+// }

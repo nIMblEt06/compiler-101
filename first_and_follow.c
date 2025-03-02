@@ -19,29 +19,46 @@ int hashFunction(Non_terminal nt){
 void addRuleToHashTableLHS(int rule_index){
 	Non_terminal lhs = Grammar[rule_index].lhs.nT;
 	int hashInd = hashFunction(lhs);
+	printf("  LHS Hash: Adding rule %d for non-terminal %d at index %d\n", rule_index, lhs, hashInd);
+	
 	if(HashTableLHS[hashInd].count == 0){
 		HashTableLHS[hashInd].tkn = lhs; // if hashIndex is empty
 	}
-	HashTableLHS[hashInd].count += 1;
-    HashTableLHS[hashInd].rule_indices[HashTableLHS[hashInd].count++] = rule_index;
+	// Store the rule index at the current count position, then increment count
+	if (HashTableLHS[hashInd].count < GRAMMAR_MAX_SIZE) {
+		HashTableLHS[hashInd].rule_indices[HashTableLHS[hashInd].count] = rule_index;
+		HashTableLHS[hashInd].count++;
+		printf("  LHS Hash: Successfully added. New count: %d\n", HashTableLHS[hashInd].count);
+	} else {
+		printf("  LHS Hash: Warning - hash table entry full\n");
+	}
 }
 
 void addRulesToHashTableRHS(int rule_index){
     sym *rhs_list = Grammar[rule_index].rhs;
+    printf("  RHS Hash: Processing rule %d with %d RHS symbols\n", rule_index, Grammar[rule_index].rhs_count);
     
-    for (int i = 0;i < RULE_SIZE; i++){
-        if (rhs_list[i].isTerminal == true || (rhs_list[i].nT == '$' /*some End Of String char delimiter*/)){
-            break;
+    for (int i = 0; i < RULE_SIZE && i < Grammar[rule_index].rhs_count; i++){
+        if (rhs_list[i].isTerminal == true){
+            printf("  RHS Hash: Skipping terminal at position %d\n", i);
+            continue;  // Skip terminals
+        }
+        
+        Non_terminal rhs = rhs_list[i].nT;
+        int hashInd = hashFunction(rhs);
+        printf("  RHS Hash: Adding rule %d for non-terminal %d at index %d\n", rule_index, rhs, hashInd);
+        
+        if(HashTableRHS[hashInd].count == 0){
+            HashTableRHS[hashInd].tkn = rhs; // if hashInd is empty
+        }
+        
+        // Store the rule index at the current count position, then increment count
+        if (HashTableRHS[hashInd].count < GRAMMAR_MAX_SIZE) {
+            HashTableRHS[hashInd].rule_indices[HashTableRHS[hashInd].count] = rule_index;
+            HashTableRHS[hashInd].count++;
+            printf("  RHS Hash: Successfully added. New count: %d\n", HashTableRHS[hashInd].count);
         } else {
-            // if (rhs_list[i].isTerminal == false)
-            Non_terminal rhs = rhs_list[i].nT;
-            int hashInd = hashFunction(rhs);
-            if(HashTableRHS[hashInd].count == 0){
-                HashTableRHS[hashInd].tkn = rhs; // if hashInd is empty
-            }
-
-            HashTableRHS[hashInd].count += 1;
-            HashTableRHS[hashInd].rule_indices[HashTableRHS[hashInd].count++] = rule_index;
+            printf("  RHS Hash: Warning - hash table entry full\n");
         }
     }
 }
@@ -75,23 +92,28 @@ FIRST_AND_FOLLOW_ENTRY *get_first_and_follow_entry(sym x){
     }
 }
 
-
 void fill_grammar() {
+    printf("Initializing hash tables...\n");
     initializeHashTable(); // Initialize hash tables before filling
 
-    FILE* fop = fopen("grammar.txt", "r");
+    printf("Opening grammar.txt...\n");
+    FILE* fop = fopen("grammar.txt","r");
     if (!fop) {
         printf("Error opening file;\n\n");
         return;
     }
 
-    int rule_cnt = 0;
+    rule_cnt = 0;  // Initialize rule_cnt
     char buffer[MAX_BUFF];
     
+    printf("Starting to read grammar rules...\n");
     while (fgets(buffer, MAX_BUFF, fop) && rule_cnt < GRAMMAR_MAX_SIZE) {
+        printf("Reading rule %d: %s", rule_cnt, buffer);
+        
         char* token = strtok(buffer, " .\n");
         if (!token) continue;
         
+        printf("LHS token: %s\n", token);
         // Handle LHS
         Grammar[rule_cnt].lhs.isTerminal = false;
         Non_terminal nt = get_non_terminal(token);
@@ -104,6 +126,7 @@ void fill_grammar() {
         // Handle RHS
         int rhs_cnt = 0;
         while ((token = strtok(NULL, " .\n")) != NULL && rhs_cnt < RULE_SIZE) {
+            printf("  RHS token: %s\n", token);
             if ((strcmp(token, "EPSILON")) == 0) {
                 Grammar[rule_cnt].rhs[rhs_cnt].isTerminal = true;
                 Grammar[rule_cnt].rhs[rhs_cnt].t = EPSILON;
@@ -126,12 +149,14 @@ void fill_grammar() {
         }
         Grammar[rule_cnt].rhs_count = rhs_cnt;
         
+        printf("Adding rule to hash tables...\n");
         // Add rule to both hash tables
         addRuleToHashTableLHS(rule_cnt);
         addRulesToHashTableRHS(rule_cnt);
         
         rule_cnt++;
     }
+    printf("Finished reading grammar. Total rules: %d\n", rule_cnt);
     fclose(fop);
 }
 
