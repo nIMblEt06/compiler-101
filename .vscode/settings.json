@@ -9,6 +9,8 @@
         "streambuf": "c",
         "string": "c",
         "ctype.h": "c",
-        "symboltable.h": "c"
+        "symboltable.h": "c",
+        "first_and_follow.h": "c",
+        "grammar.h": "c"
     }
 }

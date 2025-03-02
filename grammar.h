@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #define RULE_SIZE 25
+#define MAX_BUFF 256
 #define GRAMMAR_MAX_SIZE 101
 #define HASH_TABLE_SIZE 53 
 #define MAX_NON_TERMINALS 54  // Updated count of non-terminals
@@ -25,7 +26,7 @@ typedef enum {
     ioStmt, arithmeticExpression, expPrime, term, termPrime,
     factor, highPrecedenceOperator, lowPrecedenceOperators, booleanExpression, var,
     logicalOp, relationalOp, returnStmt, optionalReturn, idList,
-    more_ids, definetypestmt, A, option_single_constructed
+    more_ids, definetypestmt, A, option_single_constructed, $
 } Non_terminal;
 
 typedef enum {

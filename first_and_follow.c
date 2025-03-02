@@ -76,9 +76,63 @@ FIRST_AND_FOLLOW_ENTRY *get_first_and_follow_entry(sym x){
 }
 
 
-void fill_grammar(){
+void fill_grammar() {
+    initializeHashTable(); // Initialize hash tables before filling
+
+    FILE* fop = fopen("grammar.txt", "r");
+    if (!fop) {
+        printf("Error opening file;\n\n");
+        return;
+    }
+
+    int rule_cnt = 0;
+    char buffer[MAX_BUFF];
     
-    // addRulesToHashTableRHS();
+    while (fgets(buffer, MAX_BUFF, fop) && rule_cnt < GRAMMAR_MAX_SIZE) {
+        char* token = strtok(buffer, " .\n");
+        if (!token) continue;
+        
+        // Handle LHS
+        Grammar[rule_cnt].lhs.isTerminal = false;
+        Non_terminal nt = get_non_terminal(token);
+        if (nt == -1) {
+            printf("Invalid non-terminal in LHS: %s\n", token);
+            continue;
+        }
+        Grammar[rule_cnt].lhs.nT = nt;
+        
+        // Handle RHS
+        int rhs_cnt = 0;
+        while ((token = strtok(NULL, " .\n")) != NULL && rhs_cnt < RULE_SIZE) {
+            if ((strcmp(token, "EPSILON")) == 0) {
+                Grammar[rule_cnt].rhs[rhs_cnt].isTerminal = true;
+                Grammar[rule_cnt].rhs[rhs_cnt].t = EPSILON;
+            } else {
+                int nonterm = get_non_terminal(token);
+                int term = get_terminal(token);
+                
+                if (term != -1) {
+                    Grammar[rule_cnt].rhs[rhs_cnt].isTerminal = true;
+                    Grammar[rule_cnt].rhs[rhs_cnt].t = term;
+                } else if (nonterm != -1) {
+                    Grammar[rule_cnt].rhs[rhs_cnt].isTerminal = false;
+                    Grammar[rule_cnt].rhs[rhs_cnt].nT = nonterm;  // Fixed: use nT instead of t for non-terminals
+                } else {
+                    printf("No such symbol %s \n\n", token);
+                    continue;
+                }
+            }
+            rhs_cnt++;
+        }
+        Grammar[rule_cnt].rhs_count = rhs_cnt;
+        
+        // Add rule to both hash tables
+        addRuleToHashTableLHS(rule_cnt);
+        addRulesToHashTableRHS(rule_cnt);
+        
+        rule_cnt++;
+    }
+    fclose(fop);
 }
 
 // TO-DO:

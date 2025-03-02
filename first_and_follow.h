@@ -35,6 +35,9 @@ typedef struct first_n_follow_entry{
 
 FIRST_AND_FOLLOW_ENTRY *first_and_follow_table;
 
+FIRST_AND_FOLLOW_ENTRY *get_first_and_follow_entry(sym x);
+
+set *follow_set_util(Non_terminal x);
 // both function below compute the first and follow set and store them in above two array of same name;
 set *first_set(sym x);
 
