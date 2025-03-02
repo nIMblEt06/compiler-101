@@ -32,13 +32,39 @@ void handle_parse_error(token current_token, Non_terminal current_nt) {
 parse_tree create_parse_tree(FILE* fp) {
     // Initialize lexer and parse table
     initLexer();
+    
+    // Initialize first_and_follow_table
+    first_and_follow_table = (FIRST_AND_FOLLOW_ENTRY*)malloc(HASH_TABLE_SIZE * sizeof(FIRST_AND_FOLLOW_ENTRY));
+    if (!first_and_follow_table) {
+        printf("Error: Failed to allocate memory for first_and_follow_table\n");
+        return NULL;
+    }
+    
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        first_and_follow_table[i].token_name = NULL;
+        first_and_follow_table[i].first_set = NULL;
+        first_and_follow_table[i].follow_set = NULL;
+    }
+    
+    // Initialize grammar
+    fill_grammar();
+    
     compute_parse_table();
     
     // Create root node (program is the start symbol)
     parse_tree root = create_non_terminal_node(program);
+    if (!root) {
+        printf("Error: Failed to create root node\n");
+        return NULL;
+    }
     
     // Stack for parsing - using dynamic array for simplicity
     parse_tree* stack = malloc(1000 * sizeof(parse_tree));
+    if (!stack) {
+        printf("Error: Failed to allocate stack\n");
+        free_parse_tree(root);
+        return NULL;
+    }
     int stack_top = 0;
     
     // Push root to stack
@@ -48,31 +74,46 @@ parse_tree create_parse_tree(FILE* fp) {
     token current_token = getNextToken(fp);
     
     // Main parsing loop
-    while (stack_top > 0) {
+    while (stack_top > 0 && current_token.name != NULL) {
         // Get top of stack
         parse_tree current_node = stack[--stack_top];
+        if (!current_node) continue;
         
         if (current_node->symbol.isTerminal) {
             // Terminal node - match with input
-            if (current_node->symbol.t == get_terminal(current_token.name)) {
+            Terminal current_terminal = get_terminal(current_token.name);
+            if (current_terminal == -1) {
+                printf("Error: Unknown terminal token %s\n", current_token.name);
+                current_token = getNextToken(fp);
+                continue;
+            }
+            
+            if (current_node->symbol.t == current_terminal) {
                 current_node->tok = current_token;
                 current_token = getNextToken(fp);
             } else {
-                handle_parse_error(current_token, current_node->parent->symbol.nT);
-                free(stack);
-                return NULL;
+                printf("Error: Expected %s but got %s\n", 
+                       Terminals[current_node->symbol.t],
+                       current_token.name);
+                current_token = getNextToken(fp);
             }
         } else {
             // Non-terminal node - expand using parse table
-            Non_terminal current_nt = current_node->symbol.nT;
             Terminal current_t = get_terminal(current_token.name);
+            if (current_t == -1) {
+                printf("Error: Unknown terminal token %s\n", current_token.name);
+                current_token = getNextToken(fp);
+                continue;
+            }
             
-            parse_table_entry entry = get_parse_table_entry(current_nt, current_t);
+            parse_table_entry entry = get_parse_table_entry(current_node->symbol.nT, current_t);
             
             if (entry.is_error) {
-                handle_parse_error(current_token, current_nt);
-                free(stack);
-                return NULL;
+                printf("Error: No production rule for %s with lookahead %s\n",
+                       nonTerminals[current_node->symbol.nT],
+                       current_token.name);
+                current_token = getNextToken(fp);
+                continue;
             }
             
             // Get the rule to expand with
@@ -87,11 +128,16 @@ parse_tree create_parse_tree(FILE* fp) {
                 } else {
                     child = create_non_terminal_node(rule.rhs[i].nT);
                 }
+                
+                if (!child) continue;
+                
                 add_child(current_node, child);
                 
                 // Push to stack if not epsilon
                 if (!(rule.rhs[i].isTerminal && rule.rhs[i].t == EPSILON)) {
-                    stack[stack_top++] = child;
+                    if (stack_top < 1000) {
+                        stack[stack_top++] = child;
+                    }
                 }
             }
         }

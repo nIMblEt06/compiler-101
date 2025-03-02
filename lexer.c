@@ -16,19 +16,20 @@ int state;
 void removeComments(char *testCaseFile, char *cleanFile) {
     FILE *testFile = fopen(testCaseFile, "r");
     FILE *clean = fopen(cleanFile, "w");
+    if (!testFile || !clean) {
+        printf("Error: Could not open files for comment removal\n");
+        return;
+    }
     int flag = 0;
-    char ch;
-    while ((ch == getc(testFile)) != EOF) {
+    int ch;
+    while ((ch = fgetc(testFile)) != EOF) {
         if (ch == '%') {
             flag = 1;
-        }
-
-        if (flag == 0) {
-            fputc(ch, clean);
-        }
-
-        if (ch == '\n') {
+        } else if (ch == '\n') {
             flag = 0;
+            fputc(ch, clean);
+        } else if (flag == 0) {
+            fputc(ch, clean);
         }
     }
     fclose(testFile);
@@ -160,13 +161,9 @@ token getNextToken(FILE* fp) {
                     tk.name = createTokenString("EOF");
                     tk.lexeme_value = createTokenString("EOF");
                     return tk;
-                } else if (c == '%') {
-                    state = 33;
                 } else if (c == '\n') {
                     lineNo++;
-                    tk.name = createTokenString("LINE_BREAK");
-                    tk.lexeme_value = createTokenString("\\n");
-                    return tk;
+                    continue;  // Skip line breaks
                 } else if (c == '+') {
                     tk.name = createTokenString("TK_PLUS");
                     tk.lexeme_value = createTokenString("+");

@@ -37,45 +37,94 @@ void compute_parse_table() {
         RULE current_rule = Grammar[rule_num];
         Non_terminal lhs_nt = current_rule.lhs.nT;
         
+        // Skip invalid non-terminals
+        if (lhs_nt < 0 || lhs_nt >= MAX_NON_TERMINALS) {
+            printf("Warning: Rule %d has invalid LHS non-terminal index %d\n", rule_num, lhs_nt);
+            continue;
+        }
+        
         // Create a symbol for the LHS non-terminal
         sym lhs_sym = {.isTerminal = false, .nT = lhs_nt};
         
-        // Get FIRST set of the RHS
-        bool has_epsilon = true;
-        set* first_of_rhs = NULL;
-        
-        // If RHS starts with a terminal
-        if (current_rule.rhs[0].isTerminal) {
-            // Create a new set with just this terminal
-            first_of_rhs = create_set();
-            add_to_set(first_of_rhs, current_rule.rhs[0].t);
-            has_epsilon = (current_rule.rhs[0].t == EPSILON);
-        } else {
-            // For non-terminals, compute FIRST set
-            first_of_rhs = first_set(current_rule.rhs[0]);
-            has_epsilon = first_of_rhs ? first_of_rhs->containsEpsilon : false;
+        // If RHS is EPSILON, add rule to parse table entries for all terminals in FOLLOW(LHS)
+        if (current_rule.rhs_count == 1 && current_rule.rhs[0].isTerminal && current_rule.rhs[0].t == EPSILON) {
+            set* follow_of_lhs = follow_set(lhs_sym);
+            if (follow_of_lhs) {
+                for (int i = 0; i < follow_of_lhs->size; i++) {
+                    Terminal t = follow_of_lhs->t[i];
+                    if (t != EPSILON && t >= 0 && t < MAX_TERMINALS) {
+                        parse_table[lhs_nt][t].is_error = false;
+                        parse_table[lhs_nt][t].rule_number = rule_num;
+                    }
+                }
+                free(follow_of_lhs);
+            }
+            continue;
         }
         
-        // For each terminal in FIRST(RHS), add rule to parse table
-        if (first_of_rhs) {
-            for (int i = 0; i < first_of_rhs->size; i++) {
-                Terminal t = first_of_rhs->t[i];
-                if (t != EPSILON) {
-                    parse_table[lhs_nt][t].is_error = false;
-                    parse_table[lhs_nt][t].rule_number = rule_num;
+        // Get FIRST set of the RHS
+        bool has_epsilon = false;
+        set* first_of_rhs = create_set();
+        if (!first_of_rhs) {
+            printf("Error: Failed to create FIRST set for RHS of rule %d\n", rule_num);
+            continue;
+        }
+        
+        // Compute FIRST set of RHS by looking at each symbol
+        for (int i = 0; i < current_rule.rhs_count && !has_epsilon; i++) {
+            set* first_of_symbol = NULL;
+            
+            if (current_rule.rhs[i].isTerminal) {
+                first_of_symbol = create_set();
+                if (first_of_symbol) {
+                    add_to_set(first_of_symbol, current_rule.rhs[i].t);
                 }
+            } else {
+                // Skip invalid non-terminals
+                if (current_rule.rhs[i].nT < 0 || current_rule.rhs[i].nT >= MAX_NON_TERMINALS) {
+                    printf("Warning: Rule %d has invalid RHS non-terminal index %d\n", rule_num, current_rule.rhs[i].nT);
+                    continue;
+                }
+                first_of_symbol = first_set(current_rule.rhs[i]);
+            }
+            
+            if (first_of_symbol) {
+                // Add all non-epsilon symbols to FIRST(RHS)
+                for (int j = 0; j < first_of_symbol->size; j++) {
+                    Terminal t = first_of_symbol->t[j];
+                    if (t != EPSILON && t >= 0 && t < MAX_TERMINALS) {
+                        add_to_set(first_of_rhs, t);
+                    }
+                }
+                
+                // Check if this symbol can derive epsilon
+                has_epsilon = first_of_symbol->containsEpsilon;
+                free(first_of_symbol);
             }
         }
         
-        // If RHS can derive epsilon, add rule to FOLLOW(LHS) entries
+        // For each terminal in FIRST(RHS), add rule to parse table
+        for (int i = 0; i < first_of_rhs->size; i++) {
+            Terminal t = first_of_rhs->t[i];
+            if (t != EPSILON && t >= 0 && t < MAX_TERMINALS) {
+                parse_table[lhs_nt][t].is_error = false;
+                parse_table[lhs_nt][t].rule_number = rule_num;
+            }
+        }
+        free(first_of_rhs);
+        
+        // If all symbols in RHS can derive epsilon, add rule to FOLLOW(LHS) entries
         if (has_epsilon) {
             set* follow_of_lhs = follow_set(lhs_sym);
             if (follow_of_lhs) {
                 for (int i = 0; i < follow_of_lhs->size; i++) {
                     Terminal t = follow_of_lhs->t[i];
-                    parse_table[lhs_nt][t].is_error = false;
-                    parse_table[lhs_nt][t].rule_number = rule_num;
+                    if (t != EPSILON && t >= 0 && t < MAX_TERMINALS) {
+                        parse_table[lhs_nt][t].is_error = false;
+                        parse_table[lhs_nt][t].rule_number = rule_num;
+                    }
                 }
+                free(follow_of_lhs);
             }
         }
     }

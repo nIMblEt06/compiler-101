@@ -143,133 +143,231 @@ void fill_grammar() {
 // -> Optimize first_and_follow_set using Memoisation.
 
 // Assuming we already have the grammar rules. 
-set *first_set(sym x){
-    // TO-DO
-    // -> Optimize using memoization.
-    set *list_first = (set *) malloc(sizeof(set));
-    list_first->size = 0;
-    if (x.isTerminal == true){
-        list_first->t[list_first->size] = x.t;
-        list_first->size += 1;
-    } else {
-        HashTableEntry rules_entry = getRulesByLHS(x.nT);
-        int count = rules_entry.count;
-        for(int i = 0; i < count; i++){ 
-            // iterating through all the rules containing x in LHS
-            int rule_ind = rules_entry.rule_indices[i];
-            RULE rule = Grammar[rule_ind];
+set *first_set(sym x) {
+    // Create a static array to track visited non-terminals and prevent infinite recursion
+    static bool visited[MAX_NON_TERMINALS] = {false};
+    
+    set *list_first = create_set();
+    if (!list_first) {
+        printf("Error: Failed to create FIRST set\n");
+        return NULL;
+    }
+    
+    // If terminal, just add it to the set
+    if (x.isTerminal) {
+        add_to_set(list_first, x.t);
+        return list_first;
+    }
+    
+    // Check if we've already visited this non-terminal to prevent infinite recursion
+    if (visited[x.nT]) {
+        return list_first;  // Return empty set to break the recursion
+    }
+    
+    // Mark as visited
+    visited[x.nT] = true;
+    
+    // Get rules where x is in LHS
+    HashTableEntry rules_entry = getRulesByLHS(x.nT);
+    
+    // For each rule with x as LHS
+    for (int i = 0; i < rules_entry.count; i++) {
+        int rule_ind = rules_entry.rule_indices[i];
+        if (rule_ind < 0 || rule_ind >= rule_cnt) {
+            continue;
+        }
+        
+        RULE rule = Grammar[rule_ind];
+        
+        // Process each symbol in RHS until we find one that can't derive epsilon
+        int j = 0;
+        bool continue_rule = true;
+        
+        while (j < rule.rhs_count && continue_rule) {
+            sym current_sym = rule.rhs[j];
             
-            if (rule.rhs[0].isTerminal == true){ 
-                // if first of RHS is a terminal
-                list_first->t[list_first->size] = rule.rhs[0].t;
-                list_first->size += 1;
-            } else if (rule.rhs[0].isTerminal == false){ 
-                // if first of RHS is a non-terminal
-                int j = 0;
-                while(j < max_terminal){
-                    if(rule.rhs[j].isTerminal == true){
-                        list_first->t[list_first->size] = rule.rhs[j].t;
-                    } else {
-                        set *rhs_first = first_set(rule.rhs[j]);
-                        
-                        // add element to the list.
-                        for (int k = 0; k < rhs_first->size; k++){
-                            list_first->t[list_first->size] = rhs_first->t[k];
-                            list_first->size += 1;
+            if (current_sym.isTerminal) {
+                add_to_set(list_first, current_sym.t);
+                continue_rule = false;
+            } else {
+                // Skip self-recursion to prevent infinite loops
+                if (current_sym.nT == x.nT) {
+                    j++;
+                    continue;
+                }
+                
+                // Recursively compute FIRST set of non-terminal
+                set *first_of_sym = first_set(current_sym);
+                if (!first_of_sym) {
+                    j++;
+                    continue;
+                }
+                
+                // Add all non-epsilon terminals to our set
+                for (int k = 0; k < first_of_sym->size; k++) {
+                    if (first_of_sym->t[k] != EPSILON) {
+                        add_to_set(list_first, first_of_sym->t[k]);
+                    }
+                }
+                
+                // If this symbol can't derive epsilon, stop processing this rule
+                if (!first_of_sym->containsEpsilon) {
+                    continue_rule = false;
+                }
+                
+                free(first_of_sym);
+            }
+            j++;
+        }
+        
+        // If we processed all symbols and they all could derive epsilon,
+        // add epsilon to our set
+        if (continue_rule && j == rule.rhs_count) {
+            add_to_set(list_first, EPSILON);
+            list_first->containsEpsilon = true;
+        }
+    }
+    
+    // Unmark as visited before returning
+    visited[x.nT] = false;
+    
+    return list_first;
+}
+
+set *follow_set(sym x) {
+    if (!x.isTerminal) {
+        return follow_set_util(x.nT);
+    }
+    return NULL;
+}
+
+set *follow_set_util(Non_terminal x) {
+    // Create a static array to track visited non-terminals and prevent infinite recursion
+    static bool visited[MAX_NON_TERMINALS] = {false};
+    
+    set *follow_right = create_set();
+    if (!follow_right) {
+        printf("Error: Failed to create FOLLOW set\n");
+        return NULL;
+    }
+    
+    // Check if we've already visited this non-terminal to prevent infinite recursion
+    if (visited[x]) {
+        return follow_right;  // Return empty set to break the recursion
+    }
+    
+    // Mark as visited
+    visited[x] = true;
+    
+    HashTableEntry hash_entry_rhs = getRulesByRHS(x);
+    
+    // For each rule where x appears in RHS
+    for (int i = 0; i < hash_entry_rhs.count; i++) {
+        int rule_index = hash_entry_rhs.rule_indices[i];
+        if (rule_index < 0 || rule_index >= rule_cnt) {
+            continue;
+        }
+        
+        RULE rule = Grammar[rule_index];
+        
+        // Find x in RHS
+        for (int j = 0; j < rule.rhs_count; j++) {
+            if (!rule.rhs[j].isTerminal && rule.rhs[j].nT == x) {
+                // If x is the last symbol, add FOLLOW(LHS)
+                if (j == rule.rhs_count - 1) {
+                    sym lhs_sym = {.isTerminal = false, .nT = rule.lhs.nT};
+                    // Avoid infinite recursion - don't compute FOLLOW of same non-terminal
+                    if (lhs_sym.nT != x) {
+                        set *follow_lhs = follow_set(lhs_sym);
+                        if (follow_lhs) {
+                            for (int k = 0; k < follow_lhs->size; k++) {
+                                add_to_set(follow_right, follow_lhs->t[k]);
+                            }
+                            free(follow_lhs);
                         }
-                        if (rhs_first->containsEpsilon == false){
-                            break;
+                    }
+                } else {
+                    // Get FIRST of everything that follows x in this rule
+                    bool all_derive_epsilon = true;
+                    for (int k = j + 1; k < rule.rhs_count && all_derive_epsilon; k++) {
+                        set *first_next = NULL;
+                        if (rule.rhs[k].isTerminal) {
+                            first_next = create_set();
+                            if (first_next) {
+                                add_to_set(first_next, rule.rhs[k].t);
+                                all_derive_epsilon = false;
+                            }
                         } else {
-                            j++; // so that we can find the FIRST(next_non_terminal)
+                            first_next = first_set(rule.rhs[k]);
+                            if (first_next) {
+                                all_derive_epsilon = first_next->containsEpsilon;
+                            }
+                        }
+                        
+                        if (first_next) {
+                            // Add all non-epsilon symbols to FOLLOW set
+                            for (int m = 0; m < first_next->size; m++) {
+                                if (first_next->t[m] != EPSILON) {
+                                    add_to_set(follow_right, first_next->t[m]);
+                                }
+                            }
+                            free(first_next);
+                        }
+                    }
+                    
+                    // If everything after x can derive epsilon, add FOLLOW(LHS)
+                    if (all_derive_epsilon) {
+                        sym lhs_sym = {.isTerminal = false, .nT = rule.lhs.nT};
+                        // Avoid infinite recursion
+                        if (lhs_sym.nT != x) {
+                            set *follow_lhs = follow_set(lhs_sym);
+                            if (follow_lhs) {
+                                for (int k = 0; k < follow_lhs->size; k++) {
+                                    add_to_set(follow_right, follow_lhs->t[k]);
+                                }
+                                free(follow_lhs);
+                            }
                         }
                     }
                 }
             }
         }
     }
-    return list_first;
-}
-
-set *follow_set(sym x){
-    set *follow_right = NULL;
-    if (!x.isTerminal){
-        set *follow_right = follow_set_util(x.nT);
-    }
+    
+    // Unmark as visited before returning
+    visited[x] = false;
+    
     return follow_right;
 }
 
-// Used a follow_set_util as seperate function, cause we practically need to find the FOLLOW(Non_terminal) token wise.
-set *follow_set_util(Non_terminal x){
-    set *follow_right = (set *) malloc(sizeof(set)*max_terminal);
-    HashTableEntry hash_entry_rhs = getRulesByRHS(x);
-
-    int count = hash_entry_rhs.count;
-    for(int i = 0; i < count; i++){
-        int rule_index = hash_entry_rhs.rule_indices[i];
-        RULE rule = Grammar[rule_index];
-        // Assuming the RULE_SIZE constant accounts for 1 End-Of-Rule character.
-
-        for(int j = 0;j < RULE_SIZE; j++){  
-            if (rule.rhs[j].isTerminal == false && rule.rhs[j].nT == x){
-                // if current token is our input target token.
-                if(j + 1 < RULE_SIZE && rule.rhs[j+1].isTerminal==true){
-                    if (rule.rhs[j+1].t == $){
-                        // the token next to our token is EOL char.
-                        // therefore, taking follow(LHS)
-                        set *follow = follow_set(rule.lhs);
-                        for(int k =0; k < follow->size; k++){
-                            follow_right->t[follow_right->size] = follow->t[k];
-                        }
-                    } else {
-                        // the token next to my token is a terminal token.
-                        set *first_rhs = first_set(rule.rhs[j+1]);
-                        for(int k =0; k < first_rhs->size; k++){
-                            follow_right->t[follow_right->size] = first_rhs->t[k];
-                        }
-                        if (first_rhs->containsEpsilon == false){
-                            break;
-                        } else {
-                            continue;
-                        }
-                    }
-                } else { 
-                    // if the token is non terminal
-                    set *first_rhs = first_set(rule.rhs[j+1]);
-                    for(int k =0; k < first_rhs->size; k++){
-                        follow_right->t[follow_right->size] = first_rhs->t[k];
-                    }
-                    if (first_rhs->containsEpsilon == false){
-                        break;
-                    } else {
-                        continue;
-                    }
-                    
-                }
-            } else continue;
-        }
-    }
-    return follow_right;
-}
-
+// Set operations
 set* create_set() {
-    set* new_set = (set*)malloc(sizeof(set));
-    new_set->size = 0;
-    new_set->containsEpsilon = false;
-    return new_set;
+    set* s = (set*)malloc(sizeof(set));
+    if (!s) {
+        printf("Error: Failed to allocate memory for set\n");
+        return NULL;
+    }
+    s->size = 0;
+    s->containsEpsilon = false;
+    return s;
 }
 
 void add_to_set(set* s, Terminal t) {
-    // Check if terminal already exists in set
+    if (!s) return;
+    
+    // Check if terminal is already in set
     for (int i = 0; i < s->size; i++) {
         if (s->t[i] == t) return;
     }
     
-    // Add new terminal if space available
+    // Add terminal if set is not full
     if (s->size < max_terminal) {
         s->t[s->size++] = t;
         if (t == EPSILON) {
             s->containsEpsilon = true;
         }
+    } else {
+        printf("Error: Set is full, cannot add more terminals\n");
     }
 }
 

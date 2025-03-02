@@ -31,8 +31,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Create a clean version of the input file without comments
+    char clean_file[256];
+    snprintf(clean_file, sizeof(clean_file), "%s.clean", argv[1]);
+    removeComments(argv[1], clean_file);
+
     print_test_header("LEXER TESTS");
-    test_lexer(argv[1]);
+    test_lexer(clean_file);
 
     print_test_header("GRAMMAR TESTS");
     test_grammar();
@@ -47,7 +52,7 @@ int main(int argc, char* argv[]) {
     test_parse_table();
 
     print_test_header("PARSE TREE TESTS");
-    test_parse_tree(argv[1]);
+    test_parse_tree(clean_file);
 
     print_test_header("INTEGRATED COMPONENT TESTS");
     test_integrated_components();
