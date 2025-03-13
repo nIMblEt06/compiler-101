@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
                 break;
             case 2: {
                 // Use the existing printTokens function
-                FILE* fp = fopen(clean_file, "r");
+                FILE* fp = fopen(argv[1], "r");
                 if (!fp) {
                     printf("Error: Could not open clean file\n");
                     break;

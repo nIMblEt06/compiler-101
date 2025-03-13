@@ -145,22 +145,25 @@ token getNextToken(FILE* fp) {
     char c;
     state = 0;
     lexemeBegin = buffer_ptr;
+    int lex_len = 0;
     int starting_line = lineNo; // Store starting line for this token
 
     while(1) {
         switch(state) {
             case 0:
                 c = getChar(fp);
-                if (c == EOF) {
+                if (c == EOF) {//
                     tk.name = createTokenString("EOF");
                     tk.lexeme_value = createTokenString("EOF");
                     tk.line = starting_line;
                     return tk;
                 } else if (c == '\n') {
                     // Start fresh for next token after newline - don't return a token
+                    tk.name = createTokenString("LINE BREAK");
                     starting_line = lineNo; // Update starting line
                     lexemeBegin = buffer_ptr; // Reset lexeme beginning
-                    continue;
+                    return tk;
+                    // continue;
                 } else if (c == '+') {
                     tk.name = createTokenString("TK_PLUS");
                     tk.lexeme_value = createTokenString("+");
@@ -244,18 +247,34 @@ token getNextToken(FILE* fp) {
                 } else if (c == '&') {
                     state = 12;
                     continue;
-                } else if (c == '|') {
+                } else if (c == '@') {
                     state = 15;
                     continue;
                 } else if (c == ' ' || c == '\t') {
+                    state = 60;
                     continue;
-                } else if (isalpha(c) || c == '_' || c == '#') {
-                    retract(1);
-                    state = 18;  // Identifier/keyword state
+                } else if (islower(c) ) {
+                    if(c=='b'||c=='c'||c=='d'){
+                        state =35;
+                    }else{
+                        state = 39;
+                    }
+                    // retract(1);
+                    // state = 18;  // Identifier/keyword state
                     continue;
-                } else if (isdigit(c)) {
-                    retract(1);
-                    state = 40;  // Number state
+                } else if ( c == '_') {
+                    
+                    state = 41;  // identification of funid
+                    continue;
+                }else if (c == '#') {
+                    
+                    state = 46;  // identification of ruid
+                    continue;
+                }
+                
+                else if (isdigit(c)) {
+                    // retract(1);
+                    state = 49;  // Number state
                     continue;
                 } else {
                     // Handle unknown characters
@@ -339,7 +358,7 @@ token getNextToken(FILE* fp) {
                     retract(1);
                     // Single '=' is an error in this language
                     tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid operator: =");
+                    tk.lexeme_value = createTokenString("Invalid Symbol: =");
                     tk.line = starting_line;
                     return tk;
                 }
@@ -355,7 +374,7 @@ token getNextToken(FILE* fp) {
                     retract(1);
                     // Single '!' is an error in this language
                     tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid operator: !");
+                    tk.lexeme_value = createTokenString("Invalid Symbol: !");
                     tk.line = starting_line;
                     return tk;
                 }
@@ -368,7 +387,7 @@ token getNextToken(FILE* fp) {
                 } else {
                     retract(1);
                     tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid operator: &");
+                    tk.lexeme_value = createTokenString("Invalid Symbol: &");
                     tk.line = starting_line;
                     return tk;
                 }
@@ -383,100 +402,43 @@ token getNextToken(FILE* fp) {
                 } else {
                     retract(1);
                     tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid operator: &&");
+                    tk.lexeme_value = createTokenString("Invalid Symbol: &&");
                     tk.line = starting_line;
                     return tk;
                 }
                 
             case 15: // Processing '|'
                 c = getChar(fp);
-                if (c == '|') {
+                if (c == '@') {
                     state = 16;
                     continue;
                 } else {
                     retract(1);
                     tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid operator: |");
+                    tk.lexeme_value = createTokenString("Invalid Symbol: @");
                     tk.line = starting_line;
                     return tk;
                 }
                 
             case 16: // Processing '||'
                 c = getChar(fp);
-                if (c == '|') {
+                if (c == '@') {
                     tk.name = createTokenString("TK_OR");
-                    tk.lexeme_value = createTokenString("|||");
+                    tk.lexeme_value = createTokenString("@@@");
                     tk.line = starting_line;
                     return tk;
                 } else {
                     retract(1);
                     tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid operator: ||");
+                    tk.lexeme_value = createTokenString("Invalid Symbol: @@");
                     tk.line = starting_line;
                     return tk;
                 }
                 
-            case 18: // Processing identifiers and keywords
-                c = getChar(fp);
-                if (c == '_') {
-                    // Function identifier starts with '_'
-                    state = 20;
-                    continue;
-                } else if (c == '#') {
-                    // Record/Union identifier starts with '#'
-                    state = 25;
-                    continue;
-                } else if (isalpha(c)) {
-                    // Regular identifier or keyword
-                    state = 30;
-                    continue;
-                } else {
-                    retract(1);
-                    tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid identifier start");
-                    tk.line = starting_line;
-                    return tk;
-                }
-                
-            case 20: // Processing function identifier (starts with '_')
-                c = getChar(fp);
-                if (isalnum(c)) {
-                    char lexeme[MAX_LEXEME_LEN];
-                    int i = 0;
-                    lexeme[i++] = '_';
-                    lexeme[i++] = c;
-                    
-                    while (i < MAX_LEXEME_LEN - 1) {
-                        c = getChar(fp);
-                        if (!isalnum(c)) {
-                            retract(1);
-                            break;
-                        }
-                        lexeme[i++] = c;
-                    }
-                    lexeme[i] = '\0';
-                    
-                    // Check if it's a keyword
-                    char* keyword = search(symbol_table, lexeme);
-                    if (strcmp(keyword, "\0") != 0) {
-                        tk.name = createTokenString(keyword);
-                    } else {
-                        tk.name = createTokenString("TK_FUNID");
-                    }
-                    tk.lexeme_value = createTokenString(lexeme);
-                    tk.line = starting_line;
-                    return tk;
-                } else {
-                    retract(1);
-                    tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid function identifier");
-                    tk.line = starting_line;
-                    return tk;
-                }
                 
             case 25: // Processing record/union identifier (starts with '#')
                 c = getChar(fp);
-                if (isalnum(c)) {
+                if (islower(c)) {
                     char lexeme[MAX_LEXEME_LEN];
                     int i = 0;
                     lexeme[i++] = '#';
@@ -484,7 +446,7 @@ token getNextToken(FILE* fp) {
                     
                     while (i < MAX_LEXEME_LEN - 1) {
                         c = getChar(fp);
-                        if (!isalnum(c)) {
+                        if (!islower(c)) {
                             retract(1);
                             break;
                         }
@@ -512,7 +474,7 @@ token getNextToken(FILE* fp) {
                 
                 while (i < MAX_LEXEME_LEN - 1) {
                     c = getChar(fp);
-                    if (!isalnum(c) && c != '_') {
+                    if (!islower(c) && c == '_') {
                         retract(1);
                         break;
                     }
@@ -540,52 +502,380 @@ token getNextToken(FILE* fp) {
             case 33: // Comment state
                 c = getChar(fp);
                 if (c == '\n') {
-                    state = 0;  // Return to initial state
+                    state = 34;  // Return to initial state
                     continue;
-                } else if (c == EOF) {
-                    tk.name = createTokenString("EOF");
-                    tk.lexeme_value = createTokenString("EOF");
+                } else  {
+                    // tk.name = createTokenString("TK_COMMENT");
+                    // tk.lexeme_value = createTokenString("%");
+                    // tk.line = starting_line;
+                    // return tk;
+                    state = 33;
+                }
+                break;
+            
+            case 34: //end of comment
+                tk.name = createTokenString("TK_COMMENT");
+                tk.lexeme_value = createTokenString("%");
+                tk.line = starting_line;
+                return tk;
+                break;
+            
+            
+            case 35:
+                c = getChar(fp);
+                if(islower(c)){
+                    state = 39;
+                }
+                else if(c>='2'&&c<='7'){
+                    state  = 36;
+                }
+                else{
+                    state = 40;
+                }
+                break;
+
+            case 36:
+                c = getChar(fp);
+                if(c=='b'||c=='c'||c=='d'){
+                    state = 36;
+                }
+                else if(c>='2'&&c<='7'){
+                    state = 37;
+                }
+                else{
+                    state = 38;
+                }
+                break;
+            case 37:
+                c = getChar(fp);
+                if(c>='2'&&c<='7'){
+                    state = 37;
+                }
+                else{
+                    state = 38;
+                }
+                break;
+            case 38:
+            //have to figure How to handle scope.
+                retract(1);
+                lex_len = getLen();
+                if(lex_len>=2 && lex_len<=20){
+                    tk.name = "TK_ID";
+                    tk.lexeme_value = getName();
+                    //lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
                     tk.line = starting_line;
                     return tk;
                 }
-                state = 33;
-                break;
-                
-            case 40: // Number state
-                c = getChar(fp);
-                if (isdigit(c)) {
-                    char num[MAX_LEXEME_LEN];
-                    int i = 0;
-                    num[i++] = c;
-                    
-                    while (i < MAX_LEXEME_LEN - 1) {
-                        c = getChar(fp);
-                        if (!isdigit(c) && c != '.') {
-                            retract(1);
-                            break;
-                        }
-                        num[i++] = c;
+                else{
+                    tk.name = "ERROR";
+                    tk.name = createTokenString("ERROR");
+                    tk.line - starting_line;
+                    if(lex_len<2){
+                        tk.lexeme_value = createTokenString("identifier shorter than 2");
                     }
-                    num[i] = '\0';
-                    
-                    if (strchr(num, '.') == NULL) {
-                        tk.name = createTokenString("TK_NUM");
-                        tk.lexeme_value = createTokenString(num);
-                        tk.num = atoi(num);
-                    } else {
-                        tk.name = createTokenString("TK_RNUM");
-                        tk.lexeme_value = createTokenString(num);
-                        tk.rnum = atof(num);
+                    if(lex_len>20){
+                        tk.lexeme_value = createTokenString("identifier longer than 20");
                     }
-                    tk.line = starting_line;
+                    //lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
                     return tk;
-                } else {
+                }
+                break;
+            case 39:
+                c = getChar(fp);
+                if(islower(c)){
+                    state = 39;
+                }
+                else{
+                    state =40;
+                }
+                break;
+
+            case 40:
+                retract(1);
+                tk.lexeme_value = getName();
+                char *keyword = search(symbol_table,tk.lexeme_value);
+                if(strcmp(keyword,"\0")==0){
+                    tk.name = "TK_FIELDID";
+                }
+                else{
+                    tk.name = keyword;
+                }
+                //lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                tk.line = starting_line;
+                return tk;
+                break;
+
+            case 41:
+                c = getChar(fp);
+                if(isalpha(c)){
+                    state = 42;
+                }
+                else{
                     retract(1);
                     tk.name = createTokenString("ERROR");
-                    tk.lexeme_value = createTokenString("Invalid number format");
+                    tk.lexeme_value = createTokenString("is an Unknown Pattern");
+                    // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
                     tk.line = starting_line;
                     return tk;
                 }
+                break;
+            case 42:
+                c = getChar(fp);
+                if(isalpha(c)){
+                    state=42;
+                }
+                else if(isdigit(c)){
+                    state = 43;
+                }
+                else{
+                    state = 45;
+                }
+                break;
+            case 43:
+                c = getChar(fp);
+                if(isdigit(c)){
+                    state = 43;
+                }
+                else{
+                    state =44;
+                }
+                break;
+            case 44:
+                retract(1);
+                tk.name = createTokenString("TK_FUNID");
+                tk.lexeme_value = getName();
+                tk.line = starting_line;
+                // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                return tk;
+                break;
+            case 45:
+                retract(1);
+                lex_len = getLen();
+                if(lex_len<=30){
+                    tk.lexeme_value = getName();
+                    char *keyword = search(symbol_table,tk.lexeme_value);
+                    if(strcmp(keyword,"\0")==0){
+                        tk.name = createTokenString("TK_FUNID");
+                    }
+                    else{
+                        tk.name = keyword;
+                    }
+                    tk.line = starting_line;
+                    // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                    return tk;
+                }
+                else {
+                    tk.name = createTokenString("ERROR");
+                    tk.lexeme_value = createTokenString("FUNID cannot be longer than 30");
+                    tk.line = starting_line;
+                    // lexemeBegin = (buffer_ptr)%(BUFFER_SIZE);
+                    return tk;
+                }
+                break;
+            case 46:
+                c = getChar(fp);
+                if(islower(c)){
+                    state = 47;
+                }
+                else{
+                    retract(1);
+                    tk.name = createTokenString("ERROR");
+                    tk.lexeme_value = createTokenString("is an Unknown Pattern");
+                    tk.line = starting_line;
+                    // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                    return tk;
+                }
+                break;
+
+            case 47:
+                c = getChar(fp);
+                if(islower(c)){
+                    state=47;
+                }
+                else{
+                    state=48;
+                }
+                break;
+            case 48:
+                retract(1);
+                tk.name = createTokenString("TK_RUID");
+                tk.lexeme_value = getName();
+                tk.line = starting_line;
+                // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                return tk;
+                break;
+
+            // case 49: // Number state
+            //     c = getChar(fp);
+            //     if (isdigit(c)) {
+            //         char num[MAX_LEXEME_LEN];
+            //         int i = 0;
+            //         num[i++] = c;
+                    
+            //         while (i < MAX_LEXEME_LEN - 1) {
+            //             c = getChar(fp);
+            //             if (!isdigit(c) && c != '.') {
+            //                 retract(1);
+            //                 break;
+            //             }
+            //             num[i++] = c;
+            //         }
+            //         num[i] = '\0';
+                    
+            //         if (strchr(num, '.') == NULL) {
+            //             tk.name = createTokenString("TK_NUM");
+            //             tk.lexeme_value = createTokenString(num);
+            //             tk.num = atoi(num);
+            //         } else {
+            //             tk.name = createTokenString("TK_RNUM");
+            //             tk.lexeme_value = createTokenString(num);
+            //             tk.rnum = atof(num);
+            //         }
+            //         tk.line = starting_line;
+            //         return tk;
+            //     } else {
+            //         retract(1);
+            //         tk.name = createTokenString("ERROR");
+            //         tk.lexeme_value = createTokenString("Invalid number format");
+            //         tk.line = starting_line;
+            //         return tk;
+            //     }
+
+        case 49:
+            c = getChar(fp);
+            if(isdigit(c)){
+                state=49;
+            }
+            else if(c=='.'){
+                state = 51;
+            }
+            else{
+                state=50;
+            }
+            break;
+        case 50:
+            retract(1);
+            tk.name = "TK_NUM";
+            tk.num = atoi(getName());
+            // printf(" %d \n",tk.num);
+            // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+            tk.line = starting_line;
+            return tk;
+            break;
+        case 51:
+            //if we do not encounter a number do we retract and return "ERROR" or TK_NUM
+            //Currently only returning "ERROR" but maybe need of consideration
+            c = getChar(fp);
+            if(isdigit(c)){
+                state=52;
+            }
+            else{
+                retract(1);
+                tk.name = "ERROR";
+                char *dest = getName();
+                const char *sym = " is an Unknown Pattern";
+                strcat(dest, sym);
+                tk.lexeme_value = dest;
+                tk.line = starting_line;
+                // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                return tk;
+            }
+            break;
+        case 52:
+            c = getChar(fp);
+            if(isdigit(c)){
+                state=53;
+            }
+            else{
+                retract(1);
+                tk.name = "ERROR";
+                char *dest = getName();
+                const char *sym = " is an Unknown Pattern";
+                strcat(dest, sym);
+                tk.lexeme_value = dest;
+                tk.line = starting_line;
+                // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                return tk;
+            }
+            break;
+        case 53:
+            c = getChar(fp);
+            if(c=='E'){
+                state=55;
+            }
+            else{
+                state=54;
+            }
+            break;
+        case 54:
+            retract(1);
+            tk.name = "TK_RNUM";
+            tk.rnum = atof(getName());
+            tk.line = starting_line;
+            // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+            return tk;
+            break;
+        case 55:
+            c = getChar(fp);
+            if(isdigit(c)){
+                state = 57;
+            }
+            else if(c=='+'||c=='-'){
+                state = 56;
+            }
+            else{
+                retract(1);
+                tk.name = "ERROR";
+                char *dest = getName();
+                const char *sym = " is an Unknown Pattern";
+                strcat(dest, sym);
+                tk.lexeme_value = dest;
+                tk.line = starting_line;
+                // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                return tk;
+            }
+            break;
+        case 56:
+            c = getChar(fp);
+            if(isdigit(c)){
+                state = 57;
+            }
+            else{
+                retract(1);
+                tk.name = "ERROR";
+                char *dest = getName();
+                const char *sym = " is an Unknown Pattern";
+                strcat(dest, sym);
+                tk.lexeme_value = dest;
+                tk.line = starting_line;
+                // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                return tk;
+            }
+            break;
+        case 57:
+            c = getChar(fp);
+            if(isdigit(c)){
+                state = 58;
+            }
+            else{
+                retract(1);
+                tk.name = "ERROR";
+                char *dest = getName();
+                const char *sym = " is an Unknown Pattern";
+                strcat(dest, sym);
+                tk.lexeme_value = dest;
+                tk.line = starting_line;
+                // lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+                return tk;
+            }
+            break;
+        case 58:
+            tk.name = "TK_RNUM";
+            tk.lexeme_value = getName();
+            tk.rnum = atof(getName());
+            //lexemeBegin = (buffer_ptr) % (BUFFER_SIZE);
+            return tk;
+            break;
                 
             case 60: // Whitespace state - we'll skip whitespace instead of creating tokens
                 c = getChar(fp);
@@ -593,8 +883,11 @@ token getNextToken(FILE* fp) {
                     state = 60;
                 } else {
                     retract(1);
-                    state = 0;  // Return to initial state
-                    continue;
+                    // state = 0;  // Return to initial state
+                    tk.name = createTokenString("SPACE");
+                    tk.lexeme_value = getName();
+                    tk.line = starting_line;
+                    return tk;
                 }
                 break;
                 
@@ -609,7 +902,7 @@ token getNextToken(FILE* fp) {
 }
 
 void printTokens(FILE *testfile) {
-    printf("\n%-15s %-20s %-10s\n", "TOKEN", "LEXEME", "LINE NO.");
+    printf("\n%-15s %-20s %-10s\n", "LINE NO.", "LEXEME", "TOKEN");
     printf("------------------------------------------------------\n");
 
     while (1) {
@@ -619,14 +912,19 @@ void printTokens(FILE *testfile) {
         if (strcmp(tk.name, "EOF") == 0) {
             break;
         }
-		if(strcmp(tk.name, "SPACE") == 0) continue;
+		if(strcmp(tk.name, "SPACE") == 0||strcmp(tk.name, "LINE BREAK") == 0) continue;
 		if(strcmp(tk.name, "TK_NUM") == 0){
-			printf("%-15s %-20d %-10d\n", tk.name, tk.num, tk.line);
+			printf("%-10d %-20d %-15s\n", tk.line, tk.num, tk.name);
 		}
 		else if(strcmp(tk.name, "TK_RNUM") == 0){
-			printf("%-15s %-20f %-10d\n", tk.name, tk.rnum, tk.line);
+            if(tk.lexeme_value!=NULL){
+                printf("%-10d %-20s %-15s\n",tk.line, tk.lexeme_value, tk.name);
+            }else{
+                printf("%-10d %-20.2f %-15s\n", tk.line, tk.rnum, tk.name);
+            }
+			
 		}
         // Pretty-printing tokens
-        else printf("%-15s %-20s %-10d\n", tk.name, tk.lexeme_value, tk.line);
+        else printf("%-10d %-20s %-15s\n", tk.line, tk.lexeme_value, tk.name);
     }
 }
