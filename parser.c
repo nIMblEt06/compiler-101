@@ -76,12 +76,19 @@ parse_tree create_parse_tree(FILE* fp) {
     while (stack_top > 0 && current_token.name != NULL) {
         // Get top of stack
         parse_tree current_node = stack[--stack_top];
-        if (!current_node) continue;
+        if (!current_node){
+            printf("Error: Current node is NULL------------\n");
+            continue;}
         
         if (current_node->symbol.isTerminal) {
             // Terminal node - match with input
             Terminal current_terminal = get_terminal(current_token.name);
-            if (current_terminal == -1) {
+            if (current_token.name == "LINE_BREAK" ) {
+                printf("EXCEPTION: Current token is a line break\n");
+                current_token = getNextToken(fp);
+            }
+            else if (current_terminal == -1){
+                printf("1 ----- ");
                 printf("Error: Unknown terminal token %s\n", current_token.name);
                 current_token = getNextToken(fp);
                 continue;
@@ -108,10 +115,15 @@ parse_tree create_parse_tree(FILE* fp) {
         } else {
             // Non-terminal node - expand using parse table
             Terminal current_t = get_terminal(current_token.name);
-            if (current_t == -1) {
+            if (current_token.name == "LINE_BREAK" ) {
+                printf("EXCEPTION: Current token is a line break\n");
+                current_token = getNextToken(fp);
+            } // should be else if 
+            else if (current_t == -1){
+                printf("2 ----- ");
                 printf("Error: Unknown terminal token %s\n", current_token.name);
                 current_token = getNextToken(fp);
-                continue;
+                // continue;
             }
             
             parse_table_entry entry = get_parse_table_entry(current_node->symbol.nT, current_t);

@@ -13,7 +13,7 @@
 #define GRAMMAR_MAX_SIZE 101
 #define HASH_TABLE_SIZE 53 
 #define MAX_NON_TERMINALS 54  // Updated count of non-terminals
-#define MAX_TERMINALS 61      // Updated count of terminals
+#define MAX_TERMINALS 61  // 62    // Updated count of terminals
 
 typedef enum {
     program, mainFunction, otherFunctions, function, input_par, 

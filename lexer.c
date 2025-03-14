@@ -159,10 +159,12 @@ token getNextToken(FILE* fp) {
                     return tk;
                 } else if (c == '\n') {
                     // Start fresh for next token after newline - don't return a token
-                    tk.name = createTokenString("LINE BREAK");
+                    tk.name = createTokenString("LINE_BREAK");
                     starting_line = lineNo; // Update starting line
                     lexemeBegin = buffer_ptr; // Reset lexeme beginning
-                    return tk;
+                    return getNextToken(fp);
+                    // Terminal current_terminal = get_terminal(current_token.name);
+
                     // continue;
                 } else if (c == '+') {
                     tk.name = createTokenString("TK_PLUS");
@@ -887,7 +889,7 @@ token getNextToken(FILE* fp) {
                     tk.name = createTokenString("SPACE");
                     tk.lexeme_value = getName();
                     tk.line = starting_line;
-                    return tk;
+                    return getNextToken(fp);
                 }
                 break;
                 
@@ -912,7 +914,7 @@ void printTokens(FILE *testfile) {
         if (strcmp(tk.name, "EOF") == 0) {
             break;
         }
-		if(strcmp(tk.name, "SPACE") == 0||strcmp(tk.name, "LINE BREAK") == 0) continue;
+		if(strcmp(tk.name, "SPACE") == 0||strcmp(tk.name, "LINE_BREAK") == 0) continue;
 		if(strcmp(tk.name, "TK_NUM") == 0){
 			printf("%-10d %-20d %-15s\n", tk.line, tk.num, tk.name);
 		}
