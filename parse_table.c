@@ -69,14 +69,6 @@ void compute_parse_table() {
             continue;
         }
         
-        // Get FIRST set of the RHS
-        bool has_epsilon = false;
-        set* first_of_rhs = create_set();
-        if (!first_of_rhs) {
-            printf("Error: Failed to create FIRST set for RHS of rule %d\n", rule_num);
-            continue;
-        }
-        
         // Special handling for TK_REAL in stmts
         if (current_rule.rhs[0].isTerminal && current_rule.rhs[0].t == TK_REAL) {
             parse_table[lhs_nt][TK_REAL].is_error = false;
@@ -87,6 +79,86 @@ void compute_parse_table() {
         if (current_rule.rhs[0].isTerminal && current_rule.rhs[0].t == TK_RUID) {
             parse_table[lhs_nt][TK_RUID].is_error = false;
             parse_table[lhs_nt][TK_RUID].rule_number = rule_num;
+        }
+        
+        // Special handling for statement tokens in stmts
+        if (lhs_nt == stmts) {
+            Terminal stmt_tokens[] = {TK_READ, TK_WRITE, TK_ID, TK_IF, TK_WHILE, TK_CALL, TK_RECORD, TK_REAL};
+            for (int i = 0; i < 8; i++) {
+                parse_table[stmts][stmt_tokens[i]].is_error = false;
+                parse_table[stmts][stmt_tokens[i]].rule_number = 19; // Rule for stmts -> declarations typeDefinitions otherStmts returnStmt
+            }
+        }
+        
+        // Special handling for otherFunctions with TK_ID and function endings
+        if (lhs_nt == otherFunctions) {
+            // Handle function declarations
+            parse_table[otherFunctions][TK_ID].is_error = false;
+            parse_table[otherFunctions][TK_ID].rule_number = 3; // Rule for otherFunctions -> function otherFunctions
+            
+            // Handle function endings
+            parse_table[otherFunctions][TK_END].is_error = false;
+            parse_table[otherFunctions][TK_END].rule_number = 4; // Rule for otherFunctions -> EPSILON
+            
+            // Handle RUID in function context
+            parse_table[otherFunctions][TK_RUID].is_error = false;
+            parse_table[otherFunctions][TK_RUID].rule_number = 3;
+        }
+        
+        // Special handling for mainFunction with TK_DOT and endings
+        if (lhs_nt == mainFunction) {
+            parse_table[mainFunction][TK_DOT].is_error = false;
+            parse_table[mainFunction][TK_DOT].rule_number = 2; // Rule for mainFunction -> TK_MAIN stmts TK_END
+            
+            // Handle main function ending
+            parse_table[mainFunction][TK_END].is_error = false;
+            parse_table[mainFunction][TK_END].rule_number = 2;
+        }
+        
+        // Special handling for returnStmt endings
+        if (lhs_nt == returnStmt) {
+            Terminal return_tokens[] = {TK_RETURN, TK_END, TK_RUID};
+            for (int i = 0; i < 3; i++) {
+                parse_table[returnStmt][return_tokens[i]].is_error = false;
+                parse_table[returnStmt][return_tokens[i]].rule_number = rule_num;
+            }
+        }
+        
+        // Special handling for typeDefinitions
+        if (lhs_nt == typeDefinitions) {
+            Terminal type_tokens[] = {TK_TYPE, TK_RECORD};
+            for (int i = 0; i < 2; i++) {
+                parse_table[typeDefinitions][type_tokens[i]].is_error = false;
+                parse_table[typeDefinitions][type_tokens[i]].rule_number = 12; // Rule for typeDefinitions -> actualOrRedefined typeDefinitions
+            }
+            
+            // Handle empty typeDefinitions
+            parse_table[typeDefinitions][TK_END].is_error = false;
+            parse_table[typeDefinitions][TK_END].rule_number = 13; // Rule for typeDefinitions -> EPSILON
+        }
+        
+        // Special handling for otherStmts
+        if (lhs_nt == otherStmts) {
+            Terminal stmt_start_tokens[] = {TK_ID, TK_READ, TK_WRITE, TK_IF, TK_WHILE, TK_CALL, TK_RECORD, TK_RETURN, TK_TYPE};
+            for (int i = 0; i < 9; i++) {
+                parse_table[otherStmts][stmt_start_tokens[i]].is_error = false;
+                parse_table[otherStmts][stmt_start_tokens[i]].rule_number = 23; // Rule for otherStmts -> stmt otherStmts
+            }
+            
+            // Handle statement endings
+            Terminal stmt_end_tokens[] = {TK_END, TK_COLON, TK_RUID};
+            for (int i = 0; i < 3; i++) {
+                parse_table[otherStmts][stmt_end_tokens[i]].is_error = false;
+                parse_table[otherStmts][stmt_end_tokens[i]].rule_number = 24; // Rule for otherStmts -> EPSILON
+            }
+        }
+        
+        // Get FIRST set of the RHS
+        bool has_epsilon = false;
+        set* first_of_rhs = create_set();
+        if (!first_of_rhs) {
+            printf("Error: Failed to create FIRST set for RHS of rule %d\n", rule_num);
+            continue;
         }
         
         // Compute FIRST set of RHS by looking at each symbol

@@ -251,6 +251,11 @@ set *follow_set_util(Non_terminal x) {
         return NULL;
     }
     
+    // Add TK_DOLLAR to FOLLOW set of start symbol (program)
+    if (x == program) {
+        add_to_set(follow_right, TK_DOLLAR);
+    }
+    
     // Check if we've already visited this non-terminal to prevent infinite recursion
     if (visited[x]) {
         return follow_right;  // Return empty set to break the recursion

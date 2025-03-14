@@ -122,62 +122,6 @@ void parse_and_print_tree(const char* clean_file) {
         printf("====================\n\n");
         print_parse_tree(tree, 0);
         
-        // Validate tree structure
-        printf("\nTree Validation:\n");
-        printf("===============\n");
-        
-        // Print validation details
-        if (tree->symbol.isTerminal) {
-            printf("Terminal: %s", Terminals[tree->symbol.t]);
-            if (tree->tok.lexeme_value) {
-                printf(" (Value: %s)", tree->tok.lexeme_value);
-            }
-            printf("\n");
-        } else {
-            printf("Non-terminal: %s\n", nonTerminals[tree->symbol.nT]);
-            if (tree->rule_number >= 0) {
-                printf("  Using Rule %d: ", tree->rule_number);
-                RULE rule = Grammar[tree->rule_number];
-                printf("%s -> ", nonTerminals[rule.lhs.nT]);
-                for (int i = 0; i < rule.rhs_count; i++) {
-                    if (rule.rhs[i].isTerminal) {
-                        printf("%s ", Terminals[rule.rhs[i].t]);
-                    } else {
-                        printf("%s ", nonTerminals[rule.rhs[i].nT]);
-                    }
-                }
-                printf("\n");
-            }
-        }
-        
-        // Recursively validate children
-        for (int i = 0; i < tree->num_children; i++) {
-            if (tree->children[i]) {
-                if (tree->children[i]->symbol.isTerminal) {
-                    printf("Terminal: %s", Terminals[tree->children[i]->symbol.t]);
-                    if (tree->children[i]->tok.lexeme_value) {
-                        printf(" (Value: %s)", tree->children[i]->tok.lexeme_value);
-                    }
-                    printf("\n");
-                } else {
-                    printf("Non-terminal: %s\n", nonTerminals[tree->children[i]->symbol.nT]);
-                    if (tree->children[i]->rule_number >= 0) {
-                        printf("  Using Rule %d: ", tree->children[i]->rule_number);
-                        RULE rule = Grammar[tree->children[i]->rule_number];
-                        printf("%s -> ", nonTerminals[rule.lhs.nT]);
-                        for (int j = 0; j < rule.rhs_count; j++) {
-                            if (rule.rhs[j].isTerminal) {
-                                printf("%s ", Terminals[rule.rhs[j].t]);
-                            } else {
-                                printf("%s ", nonTerminals[rule.rhs[j].nT]);
-                            }
-                        }
-                        printf("\n");
-                    }
-                }
-            }
-        }
-        
         free_parse_tree(tree);
     } else {
         printf("Failed to create parse tree\n");

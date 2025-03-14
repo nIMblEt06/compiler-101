@@ -11,9 +11,9 @@
 #include <stdbool.h>
 #include "grammar.h"
 
-#define max_terminal 50
-#define NT_SIZE 50
-#define FIRST_AND_FOLLOW_LENGTH 35
+#define max_terminal 100
+#define NT_SIZE 100
+#define FIRST_AND_FOLLOW_LENGTH 100
 // DECIDED ON THE BASIS OF THE NUMBER OF NON_TERMINALS - VERIFY ONCE
 
 extern RULE Grammar[GRAMMAR_MAX_SIZE];

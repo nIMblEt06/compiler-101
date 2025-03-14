@@ -7,7 +7,7 @@ const char *nonTerminals[] = {
     "remaining_list", "stmts", "typeDefinitions", "actualOrRedefined", "typeDefinition",
     "fieldDefinitions", "fieldDefinition", "fieldtype", "moreFields", "declarations",
     "declaration", "global_or_not", "otherStmts", "stmt", "assignmentStmt",
-    "singleOrRecId", "constructedVariable", "oneExpansion", "moreExpansions", "funCallStmt",
+    "singleOrRecId", "oneExpansion", "moreExpansions", "funCallStmt",
     "outputParameters", "inputParameters", "iterativeStmt", "conditionalStmt", "elsePart",
     "ioStmt", "arithmeticExpression", "expPrime", "term", "termPrime",
     "factor", "highPrecedenceOperator", "lowPrecedenceOperators", "booleanExpression", "var",

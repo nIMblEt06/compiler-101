@@ -50,6 +50,42 @@ parse_tree create_parse_tree(FILE* fp) {
     fill_grammar();
     compute_parse_table();
     
+    // Print FIRST and FOLLOW sets for all non-terminals
+    // printf("\n=== FIRST and FOLLOW Sets ===\n");
+    // for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+    //     if (nonTerminals[i] == NULL) continue;
+        
+    //     printf("\nFor non-terminal %s:\n", nonTerminals[i]);
+        
+    //     // Compute and print FIRST set
+    //     sym current_sym = {.isTerminal = false, .nT = i};
+    //     set* first = first_set(current_sym);
+    //     if (first) {
+    //         printf("FIRST = { ");
+    //         for (int j = 0; j < first->size; j++) {
+    //             if (Terminals[first->t[j]]) {
+    //                 printf("%s ", Terminals[first->t[j]]);
+    //             }
+    //         }
+    //         printf("}\n");
+    //         free(first);
+    //     }
+        
+    //     // Compute and print FOLLOW set
+    //     set* follow = follow_set(current_sym);
+    //     if (follow) {
+    //         printf("FOLLOW = { ");
+    //         for (int j = 0; j < follow->size; j++) {
+    //             if (Terminals[follow->t[j]]) {
+    //                 printf("%s ", Terminals[follow->t[j]]);
+    //             }
+    //         }
+    //         printf("}\n");
+    //         free(follow);
+    //     }
+    // }
+    // printf("\n=== End of FIRST and FOLLOW Sets ===\n\n");
+    
     // Create root node (program is the start symbol)
     parse_tree root = create_non_terminal_node(program);
     if (!root) {
