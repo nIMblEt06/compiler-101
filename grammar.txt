@@ -1,4 +1,3 @@
-program mainFunction
 program otherFunctions mainFunction
 mainFunction TK_MAIN stmts TK_END
 otherFunctions function otherFunctions
@@ -17,7 +16,7 @@ constructedDatatype TK_UNION TK_RUID
 constructedDatatype TK_RUID
 remaining_list TK_COMMA parameter_list
 remaining_list EPSILON
-stmts declarations typeDefinitions otherStmts returnStmt
+stmts typeDefinitions declarations otherStmts returnStmt
 typeDefinitions actualOrRedefined typeDefinitions
 typeDefinitions EPSILON
 actualOrRedefined typeDefinition
