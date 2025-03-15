@@ -1,3 +1,13 @@
+/* -----------------------------------------
+             Group Number- 6
+ID 2021B5A71704P Name Arushi Gulati
+ID 2021B3A71260P Name Aryan Rajkumar Keshri
+ID 2021B4A70887P Name Chinmay Pushkar
+ID 2021B3A71102P Name Om Kotadiya Jain
+ID 2021B3A71117P Name Riddhi Agarwal
+ID 2021B5A70923P Name Shwetabh Niket
+--------------------------------------------- */
+
 #include "tree.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +57,6 @@ void print_parse_tree(parse_tree root, int level) {
     }
     printf("\n");
 
-    // Print children recursively
     for (int i = 0; i < root->num_children; i++) {
         print_parse_tree(root->children[i], level + 1);
     }
@@ -60,4 +69,86 @@ void free_parse_tree(parse_tree root) {
         free_parse_tree(root->children[i]);
     }
     free(root);
+}
+
+// Helper function for inorder traversal
+static void inorder_traversal(parse_tree node, FILE *fp) {
+    if (!node) return;
+    
+    // Process left children (if any)
+    if (node->num_children > 0) {
+        inorder_traversal(node->children[0], fp);
+    }
+    
+    // Process current node
+    char lexeme[50] = "----";  // Default for non-leaf nodes
+    char token_name[50] = "";
+    char value[50] = "----";   // Default for non-numeric values
+    char parent_symbol[50] = "";
+    char is_leaf[5] = "";
+    char node_symbol[50] = "";
+    int line_no = 0;
+    
+    // Get parent symbol
+    if (node->parent) {
+        strcpy(parent_symbol, nonTerminals[node->parent->symbol.nT]);
+    } else {
+        strcpy(parent_symbol, "ROOT");
+    }
+    
+    // Determine if node is a leaf
+    if (node->num_children == 0) {
+        strcpy(is_leaf, "yes");
+        
+        // For leaf nodes, get the lexeme
+        if (node->tok.lexeme_value) {
+            strcpy(lexeme, node->tok.lexeme_value);
+        }
+        
+        // Get token name
+        strcpy(token_name, Terminals[node->symbol.t]);
+        
+        // For numeric values
+        if (node->symbol.t == TK_NUM) {
+            sprintf(value, "%d", node->tok.num);
+        } else if (node->symbol.t == TK_RNUM) {
+            sprintf(value, "%f", node->tok.rnum);
+        }
+        
+        // Get line number
+        line_no = node->tok.line;
+    } else {
+        strcpy(is_leaf, "no");
+        strcpy(node_symbol, nonTerminals[node->symbol.nT]);
+    }
+    
+    // Print to file with proper formatting
+    fprintf(fp, "%-20s %-5d %-15s %-15s %-20s %-5s %-20s\n", 
+            lexeme, line_no, token_name, value, parent_symbol, is_leaf, node_symbol);
+    
+    // Process remaining children
+    for (int i = 1; i < node->num_children; i++) {
+        inorder_traversal(node->children[i], fp);
+    }
+}
+
+void printParseTree(parse_tree PT, char *outfile) {
+    if (!PT) return;
+    
+    FILE *fp = fopen(outfile, "w");
+    if (!fp) {
+        printf("Error: Unable to open file %s for writing\n", outfile);
+        return;
+    }
+    
+    // Print header
+    fprintf(fp, "%-20s %-5s %-15s %-15s %-20s %-5s %-20s\n", 
+            "lexeme", "line", "tokenName", "valueIfNumber", "parentNodeSymbol", "isLeaf", "NodeSymbol");
+    fprintf(fp, "%-20s %-5s %-15s %-15s %-20s %-5s %-20s\n", 
+            "--------------------", "-----", "---------------", "---------------", "--------------------", "-----", "--------------------");
+    
+    // Start inorder traversal
+    inorder_traversal(PT, fp);
+    
+    fclose(fp);
 } 

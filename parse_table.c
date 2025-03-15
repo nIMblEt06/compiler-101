@@ -1,7 +1,13 @@
-/******************************************************************************
- * This file along with parse_table.h handles all the operations related to parse_table
- * Import this as module in parser.c/parser.h
-*******************************************************************************/
+/* -----------------------------------------
+             Group Number- 6
+ID 2021B5A71704P Name Arushi Gulati
+ID 2021B3A71260P Name Aryan Rajkumar Keshri
+ID 2021B4A70887P Name Chinmay Pushkar
+ID 2021B3A71102P Name Om Kotadiya Jain
+ID 2021B3A71117P Name Riddhi Agarwal
+ID 2021B5A70923P Name Shwetabh Niket
+--------------------------------------------- */
+
 
 #include "parse_table.h"
 #include <stdio.h>

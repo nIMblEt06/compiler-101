@@ -1,3 +1,13 @@
+/* -----------------------------------------
+             Group Number- 6
+ID 2021B5A71704P Name Arushi Gulati
+ID 2021B3A71260P Name Aryan Rajkumar Keshri
+ID 2021B4A70887P Name Chinmay Pushkar
+ID 2021B3A71102P Name Om Kotadiya Jain
+ID 2021B3A71117P Name Riddhi Agarwal
+ID 2021B5A70923P Name Shwetabh Niket
+--------------------------------------------- */
+
 #ifndef TREE_H
 #define TREE_H
 
@@ -22,6 +32,7 @@ parse_tree create_node(sym symbol);
 void add_child(parse_tree parent, parse_tree child);
 void print_parse_tree(parse_tree root, int level);
 void free_parse_tree(parse_tree root);
+void printParseTree(parse_tree PT, char *outfile);
 
 #endif
 

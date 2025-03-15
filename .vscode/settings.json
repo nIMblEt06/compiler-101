@@ -13,6 +13,7 @@
         "first_and_follow.h": "c",
         "grammar.h": "c",
         "parser.h": "c",
-        "parse_table.h": "c"
+        "parse_table.h": "c",
+        "stdlib.h": "c"
     }
 }
