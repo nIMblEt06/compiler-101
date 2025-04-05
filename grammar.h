@@ -76,7 +76,7 @@ typedef struct Rule{
 }RULE;
 
 // Array of all production rules
-RULE Grammar[GRAMMAR_MAX_SIZE];
+extern RULE Grammar[GRAMMAR_MAX_SIZE];
 
 // Hash Table Structure for mapping a Non_terminal to its corresponding rule.
 typedef struct HashTableEntry{
@@ -85,8 +85,8 @@ typedef struct HashTableEntry{
 	int count;
 } HashTableEntry;
 
-HashTableEntry HashTableLHS[HASH_TABLE_SIZE];
-HashTableEntry HashTableRHS[HASH_TABLE_SIZE*2];
+extern HashTableEntry HashTableLHS[HASH_TABLE_SIZE];
+extern HashTableEntry HashTableRHS[HASH_TABLE_SIZE*2];
 
 extern int rule_cnt;  // Make rule_cnt accessible across files
 

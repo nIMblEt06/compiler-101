@@ -43,7 +43,7 @@ typedef struct first_n_follow_entry{
     set *follow_set;
 } FIRST_AND_FOLLOW_ENTRY;
 
-FIRST_AND_FOLLOW_ENTRY *first_and_follow_table;
+extern FIRST_AND_FOLLOW_ENTRY *first_and_follow_table;
 
 FIRST_AND_FOLLOW_ENTRY *get_first_and_follow_entry(sym x);
 

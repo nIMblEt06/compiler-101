@@ -21,6 +21,9 @@ ID 2021B5A70923P Name Shwetabh Niket
 * We are usign the  hash function to be able to find out the GRAMMAR rules containing the
 * non-terminal in their LHS so that we can find out their FIRST() and FOLLOW(). 
 *******/
+FIRST_AND_FOLLOW_ENTRY *first_and_follow_table;
+HashTableEntry HashTableLHS[HASH_TABLE_SIZE];
+HashTableEntry HashTableRHS[HASH_TABLE_SIZE*2];
 
 int hashFunction(Non_terminal nt){
 	return (int)nt % HASH_TABLE_SIZE;

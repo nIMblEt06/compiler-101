@@ -16,6 +16,8 @@ ID 2021B5A70923P Name Shwetabh Niket
 #include "grammar.h"
 #define MAX_BUFF 256
 
+RULE Grammar[GRAMMAR_MAX_SIZE];
+
 int rule_cnt=0;
 
 Non_terminal get_non_terminal(char *str){
